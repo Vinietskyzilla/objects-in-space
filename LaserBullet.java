@@ -1,7 +1,12 @@
+/**
+	
+*/
 public class LaserBullet extends Weapon {
+	/**
+		
+	*/
 	public LaserBullet(double X, double Y, double userdx, double userdy, double userMaxVelocity, double userAccelRate, double ang, int userShipID) {
 		super(10*userMaxVelocity);
-		// THINK OF A BETTER NAME!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		name = "LaserBullet";
 		shipID = userShipID;
 		friendlyFire = false;

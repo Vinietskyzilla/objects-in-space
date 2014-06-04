@@ -1,0 +1,1 @@
+javadoc -d ./javadoc -private -windowtitle "Objects in Space Documentation" *.java

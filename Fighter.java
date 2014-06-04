@@ -2,8 +2,17 @@ import java.io.*;
 import javax.imageio.ImageIO;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
+/**
+	
+*/
 public class Fighter extends SpaceObj {
+	/**
+		
+	*/
 	protected Fighter() {}
+	/**
+		
+	*/
 	public Fighter(int X, int Y, int sID) {
 		// pass maxVelocity to SpaceObj
 		super(sID / 3);
@@ -15,8 +24,8 @@ public class Fighter extends SpaceObj {
 		structInteg = 50;
 		
 		angle = Math.random()*2*Math.PI;
-		x = X;// - .5*origObjImg.getWidth();
-		y = Y;// - .5*origObjImg.getHeight();
+		x = X;
+		y = Y;
 		dx = 0;
 		dy = 0;	// y increases UPWARD
 		accelRate = .06;
@@ -30,8 +39,6 @@ public class Fighter extends SpaceObj {
 		
 		origObjImg = null;
 		try {
-			//origObjImg = ImageIO.read(new File("fighter.png"));
-			//origObjImg = new BufferedImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/fighter.png")));
 			origObjImg = ImageIO.read(getClass().getResource("fighter.png"));
 		} catch (IOException e) {
 			e.printStackTrace();
