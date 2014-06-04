@@ -1,0 +1,15 @@
+
+Position
+double x
+double y
+getPositionInt
+getPositionDouble
+
+Position panelPos // position in ActionPanel actP; x increases right, y increases down; (0, 0) at upper left corner of window
+Position gamePos // position in game; x increases right, y increases up; (0, 0) at lower left corner of game field
+	// images should be painted at (gamePos.x - image.width / 2, gamePos.y - (or + depending on orientation) image.height / 2)
+Dimension gameFieldDim // width and height of game field
+
+background images should be large (maybe 5000*5000 pixels, unless it slows things down) and sparse
+
+I want a function that centers the visible window on a given Position when called
