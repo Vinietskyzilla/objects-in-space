@@ -5,12 +5,6 @@
 // ° `   ¤  •  *January 2011 ·    °   *   
 //   ¤   ·   °   •   ·  °  `   ¤  °  *  `
 // * • ' . · ° * ` + ¤ • ¤ • · ° * + ¤ · °
-
-
-// REMEMBER: I want everything to center on the player's ship.  Their ship
-//    will never move.  Instead, when they accelerate, the things around
-//    them will be moved accordingly.  (Just like Futurama.)  :)
-
 import java.awt.*;
 import javax.swing.*;
 import java.util.*;
@@ -18,129 +12,551 @@ import java.awt.event.*;
 import java.io.*;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.awt.geom.AffineTransform;
+
+// Note to self, or, How I Fixed the astros Concurrency Bug
+//
+// Not sure how much synchronizing had to do with it.  I finally just went and took out all iterations and then
+//   made everything check index bounds repeatedly.  Also, there may still be a problem in the paint code where
+//   it tries to call get(i) but i is null and it throws an exception.  Not sure how to fix that to guarantee
+//   it never does that, but you could... already did it.  Made it recheck size every time. :P
+
+
 public class Game {
 	JFrame frame;
-	int width;  // desired width
-	int height; // desired height
+	int panelWidth;  // desired width for the square in which you fly
+	int panelHeight; // desired height for the square in which you fly
+	int sideMenuWidth;
+	int thisSystemWidth;
+	int thisSystemHeight;
+	// map dimension stuff
+	int mapBorder;
+	int mapWidth;
+	// panels, lists, etc.
 	UpdatePanel up;
 	ActionPanel actP;
 	PlayerShip hero;
-	ArrayList<SpaceObj> astros = new ArrayList<SpaceObj>();
+	// java.util.List<SpaceObj> astros = Collections.synchronizedList(new ArrayList<SpaceObj>());
+	java.util.List<SpaceObj> astros = new Vector<SpaceObj>();
+	ArrayList<Star> stars = new ArrayList<Star>();
+	ArrayList<Dust> dust = new ArrayList<Dust>();
+	int level;
+	int shipID = 2;
+	SpaceObj centerSpaceObj;
+	//boolean repainterRun;
 	public static void main(String[] args) {
-		// Game g = new Game();
-		// g.run();
-		new Game().run();
+		new Game();
+		//System.out.println("1");
 	}
 	public Game() {
-		// initialize GUI
-		// initialize music
-		// initialize sound
-		// initialize input
-		width = 700;
-		height = 700;
+		//System.out.println("2");
 		int horizantalWindowBorderOffset = 6;
-		int headerWindowBorderOffset = 33;
+		int headerWindowBorderOffset = 28;
 		frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		//FlowLayout fl = new FlowLayout();
-		//frame.setLayout(fl);
 		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-		frame.setBounds((dim.width / 2) - (width / 2) - (horizantalWindowBorderOffset / 2),
-			(dim.height / 2) - (height / 2) - (headerWindowBorderOffset - 3),
-			width + horizantalWindowBorderOffset,
-			height + headerWindowBorderOffset);
-		//frame.setBounds(0, 0, width, height);
+		sideMenuWidth = 300; // the grey dividing bar cuts out 4 of these pixels
+		mapWidth = 200;
+		mapBorder = (sideMenuWidth - 4 - mapWidth) / 2;
+		
+		/////////////////////////////////////////////////////////////////////////////////////////////
+		//
+		// BEGIN: THIS STUFF NEEDS SERIOUS TESTING
+		
+		// full screen
+		panelWidth = dim.width - sideMenuWidth;
+		panelHeight = dim.height;
+		//System.out.println(panelWidth);
+		
+		// set dimensions manually
+		// don't set height or width greater than the smallest screen size you expect will use this
+		// panelWidth = 1200;
+		// panelHeight = 700;
+		
+		// nearly full screen
+		// panelWidth = dim.width - horizantalWindowBorderOffset;
+		// panelHeight = dim.height - headerWindowBorderOffset;		
+		
+		// big auto square
+		//panelWidth = panelHeight = Math.min(dim.width, dim.height) - 100;
+		
+		int windowX = (dim.width / 2) - ((panelWidth + sideMenuWidth) / 2) - (horizantalWindowBorderOffset / 2);
+		int windowY = (dim.height / 2) - (panelHeight / 2) - (headerWindowBorderOffset - 3);
+		
+		// if you want to ensure the window header bar is visible
+		// NOT COMPATIBLE with the above full screen option
+		// if(windowX < 0)
+			// windowX = 0;
+		// if(windowY < 0)
+			// windowY = 0;
+			
+		// END: THIS STUFF NEEDS SERIOUS TESTING
+		//
+		/////////////////////////////////////////////////////////////////////////////////////////////
+		
+		frame.setLayout(null);
+		frame.setBounds(windowX,
+			windowY,
+			panelWidth + sideMenuWidth + horizantalWindowBorderOffset,
+			panelHeight + headerWindowBorderOffset);
 		frame.setResizable(false);
 		up = new UpdatePanel();
+		up.setBounds(0, 0, panelWidth + sideMenuWidth, panelHeight);
 		actP = new ActionPanel();
-		// other menu and game panels here
-		frame.getContentPane().add(BorderLayout.CENTER, up);
-		//frame.pack();
-	}
-	public void run() {
+		actP.setBounds(0, 0, panelWidth + sideMenuWidth, panelHeight);
+		// frame.getContentPane().add(BorderLayout.CENTER, up);
+		frame.getContentPane().add(up);
+		// System.out.println("3");
 		frame.setVisible(true);
-		// up is in focus, player may click on buttons in that panel causing further events
 	}
-	
-	public void play() {
-		// gameDim.width = ;
-		// gameDim.height = ;
-		//hero.gamePos.x = gameDim.width / 2;
-		//hero.gamePos.y = gameDim.height / 2;
-		//spawnSpaceObjs();
-		for(SpaceObj s : astros) {
-			System.out.println("Found an object in astros");
-		}
-		// debug code
-		for(SpaceObj s : astros) {
-			s.checkHeightWidth();
-		}
-		hero.checkHeightWidth();
-		boolean levelComplete = false;
-		int tempVar = 0;
-		int slowCtr = 0;
-		long totalTime = new Date().getTime();
-		while(levelComplete == false) {
-			long msStart = new Date().getTime();
-			updatePositions();
-			//collisions();
-			//possibleSpawn()
-			actP.validate();
-			//actP.revalidate();
-			//actP.repaint();
-			//frame.getContentPane().repaint(); 
-			++hero.x;
-			try {
-				// Make sure that the game runs at the same speed on all systems
-				msStart = 16 - (new Date().getTime() - msStart);
-				if(msStart > 0)
-					Thread.sleep(msStart);
-				else
-					++slowCtr;
-			} catch (Exception e) {
-				e.printStackTrace();
+	public class Play implements Runnable {
+		public void run() {
+			// System.out.println("4");
+			shipID = 2;
+			thisSystemWidth = 10000;
+			thisSystemHeight = 10000;
+			stars.clear();
+			// populateStars(stars, thisSystemWidth, thisSystemHeight);
+			populateStars(stars);
+			dust.clear();
+			// populateDust(dust, thisSystemWidth, thisSystemHeight);
+			populateDust(dust);
+			//System.out.println(stars.size() + " stars");
+			// for(Star s : stars) {
+				// System.out.println("Star at (" + (s.x + panelWidth / 2) + ", " + (-(s.y) + panelHeight / 2) + ")");
+			// }
+			// System.out.println("5");
+			//synchronized (astros) {
+				astros.clear();
+			//}
+			spawnSpaceObjs();
+			// System.out.println("7");
+			hero.turningRight = false;
+			hero.turningLeft = false;
+			hero.isAccel = 0;
+			hero.dx = 0;
+			hero.dy = 0;
+			hero.angle = .5*Math.PI;
+			hero.firing = 0;
+			hero.structInteg = hero.structIntegInit;
+			// frame.getContentPane().add(BorderLayout.CENTER, actP);
+			frame.getContentPane().add(actP);
+			frame.getContentPane().validate();
+			frame.getContentPane().repaint();
+			actP.requestFocus();
+			// System.out.println("8");
+			//repainterRun = true;
+			//Thread repainterThread = new Thread(new Repainter());
+			//repainterThread.start();
+			// long totalTime = new Date().getTime();
+			boolean levelComplete = false;
+			int endLevelPauseCount = 0;
+			double countTo = 300;
+			long loopTime = new Date().getTime();
+			long paintTime = 16;
+			while(levelComplete == false) {
+				long msStart = new Date().getTime();
+				fireWeapons();
+				// System.out.println("11");
+				updatePositions();
+				// System.out.println("13");
+				//System.out.println(Math.toDegrees(hero.angle));
+				checkCollisions();
+				kill();
+				if(paintTime >= 16) {
+					actP.repaint();
+					paintTime = 0;
+					if(enemiesRemain() == false)
+						++endLevelPauseCount;
+				}
+				// System.out.println("15");
+				//System.out.println(astros.get(0).shipID + " " + astros.get(0).name + " " + astros.get(0).structInteg + " " + astros.get(0).countDown);
+				try {
+					// Make sure that the game runs at the same speed on all systems
+					msStart = 4 - (new Date().getTime() - msStart);
+					if(msStart > 0)
+						Thread.sleep(msStart);
+					//Thread.sleep(4);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				if(endLevelPauseCount >= countTo)
+					levelComplete = true;
+				paintTime += new Date().getTime() - loopTime;
+				loopTime = new Date().getTime();
 			}
-			++tempVar;
-			if(tempVar == 180)
-				levelComplete = true;
+			//repainterRun = false;
+			++level;
+			//System.out.println("Averaged " + (1000 / ((new Date().getTime() - totalTime) / (countTo))) + " fps");
+			actP.nextPanel();
 		}
-		++actP.level;
-		astros.clear();
-		spawnSpaceObjs();
-		if(slowCtr > 0)
-			System.out.println(slowCtr + " loops ran at less than 60 fps");
-		//System.out.println(new Date().getTime() + " " + totalTime + " " + (new Date().getTime() - totalTime));
-		System.out.println("Averaged " + (1000 / ((new Date().getTime() - totalTime) / 180.0)) + " fps");
-		actP.nextPanel();
 	}
-	private void spawnSpaceObjs() {
-		//if(level == 1)
-			// spawn easy stuff
-		//if(level % 3 == 0)
-			// add the next thing to the list of possible ships
-			
-		astros.add(new Fighter(100, 100));
-		astros.add(new Fighter(-100, -100));
+	public boolean enemiesRemain() {
+		synchronized (astros) {
+			for(SpaceObj s : astros) {
+				if(s instanceof Weapon == false)
+					return true;
+			}
+		}
+		return false;
 	}
-	private void possibleSpawn() {
-		//if(a bunch of time has passed or something)
-			//spawnSpaceObjs();
+	public void populateStars(ArrayList<Star> s) {
+		for(int i = 0; i < 200; i++) {
+			s.add(new Star(4000, 4000));
+		}
 	}
+	public void populateDust(ArrayList<Dust> s) {
+		for(int i = 0; i < 150; i++) {
+			s.add(new Dust(4000, 4000));
+		}
+	}
+	// public void populateStars(ArrayList<Star> s) {
+		// int starNum = Math.min((thisSystemWidth*thisSystemHeight / 100000), 3000);
+		// for(int i = 0; i < starNum; i++) {
+			// s.add(new Star(thisSystemWidth, thisSystemHeight));
+		// }
+	// }
+	// public void populateDust(ArrayList<Dust> s) {
+		// int dustNum = Math.min((thisSystemWidth*thisSystemHeight / 100000), 3000);
+		// for(int i = 0; i < dustNum; i++) {
+			// s.add(new Dust(thisSystemWidth, thisSystemHeight));
+		// }
+	// }
+	private /*synchronized*/ void spawnSpaceObjs() {
+		//synchronized (astros) {
+			astros.add(new Fighter(100, 100, getNextShipID() + level));
+			astros.add(new Fighter(-100, -100, getNextShipID() + level));
+			astros.add(new Fighter(-200, 200, getNextShipID() + level * 2));
+			// System.out.println("6");
+		//}
+	}
+	public int getNextShipID() {
+		return shipID++;
+	}
+	public void fireWeapons() {
+		// System.out.println("10");
+		Weapon w;
+		int astroSize = astros.size();
+		synchronized(astros) {
+			//for(SpaceObj s : astros) {
+			for(int i = 0; i < astroSize; i++) {
+				SpaceObj s = astros.get(i);
+				if(s.selectedWeapon != -1) {
+					w = getWeapon(s);				
+					if(s.firing == 1) {
+						// fire!
+						astros.add(w);
+					}
+					if(s.firing > 0)
+						++s.firing;
+					if(s.firing > w.fireRateInverse)
+						s.firing = 1;
+				}
+			}
+			w = getWeapon(hero);
+			if(hero.firing == 1) {
+				// fire!
+				astros.add(w);
+			}
+			if(hero.firing > 0)
+				++hero.firing;
+			if(hero.firing > w.fireRateInverse)
+				hero.firing = 1;
+		}
+	}
+	public Weapon getWeapon(SpaceObj s) {
+		if(s.selectedWeapon == Weapon.LB) {
+			// LaserBullet
+			return new LaserBullet(s.x, s.y, s.dx, s.dy, s.maxVelocity, s.accelRate, s.angle, s.shipID);
+		}
+		// else if(s.selectedWeapon == ) {
+		
+		// }
+		// else if(s.selectedWeapon == ) {
+		
+		// }
+		// else if(s.selectedWeapon == ) {
+		
+		// }
+		// else if(s.selectedWeapon == ) {
+		
+		// }
+		// else if(s.selectedWeapon == ) {
+		
+		// } 
+		return new LaserBullet(s.x, s.y, s.dx, s.dy, s.maxVelocity, s.accelRate, s.angle, s.shipID);
+	}
+	// When this method is all finished see if it's possible to combine
+	//   all the foreach loops with astros into just one foreach loop.
 	private void updatePositions() {
+		// System.out.println("12");
 		// the order of the following may need to change depending on when updatePositions is called
-		// modify acceleration
+		///////////////////////
+		// modify rotation
+		
+		if(hero.turningLeft) {
+			hero.angle += hero.turnRate;
+			if(hero.angle > 2*Math.PI)
+				hero.angle -= 2*Math.PI;
+		}
+		if(hero.turningRight) {
+			hero.angle -= hero.turnRate;
+			if(hero.angle < 0)
+				hero.angle += 2*Math.PI;
+		}
+		
+		int astroSize = astros.size();
+		//synchronized (astros) {
+			for(int i = 0; i < astroSize; i++) {
+				SpaceObj s = astros.get(i);
+				
+				if(s.turningLeft) {
+					s.angle += s.turnRate;
+					if(s.angle > 2*Math.PI)
+						s.angle -= 2*Math.PI;
+				}
+				if(s.turningRight) {
+					s.angle -= s.turnRate;
+					if(s.angle < 0)
+						s.angle += 2*Math.PI;
+				}
+			}
+		//}
+		///////////////////////
 		// modify velocity
+		//synchronized (astros) {
+			for(int i = 0; i < astroSize; i++) {
+				intervalAccel(astros.get(i));
+			}
+		//}
+		//synchronized (hero) {
+			intervalAccel(hero);
+		//}
+		// if(hero.getdx() < 10 || hero.getdy() < 10)
+			// System.out.println("hero slow");
+		// The key release keyEvent sets hero.isAccel to false
+		// DON'T SET hero.isAccel = false HERE !!!
+		//hero.isAccel = false;
+		
+		
+		///////////////////////
 		// modify position
 		
 		// make sure masks and images are at the same position at the end of this method
-	}
-	private void collisions() {
-		// make sure masks and images are at the same position when checking collisions
-	}
 		
+		// move everything based on the current velocity of each object
+		synchronized (astros) {
+			for(int i = 0; i < astroSize; i++) {
+				SpaceObj s = astros.get(i);
+				s.x += s.dx;
+				s.y += s.dy;
+				if(s instanceof Weapon) {
+					++((Weapon) s).cyclesLived;
+					if(((Weapon) s).cyclesLived >= ((Weapon) s).timeToLive) {
+						astros.remove(s);
+						astroSize = astros.size();
+					}
+				}
+			}
+		}
+		//synchronized (astros) {
+			hero.x += hero.dx;
+			hero.y += hero.dy;
+		//}
+		
+		// move everything based on movement of centerSpaceObj
+		// moveFromCenter(stars, 3);
+		// moveFromCenter(dust, 1);
+		// moveFromCenter(astros, 1);
+		for(Star s : stars) {
+			// change by movement divided by 3 so that stars move slowly and seem far away
+			s.x -= centerSpaceObj.dx / 3;
+			s.y -= centerSpaceObj.dy / 3;
+			if(s.x < -2000)
+				s.x += 4000;
+			else if(s.x > 2000)
+				s.x -= 4000;
+			if(s.y < -2000)
+				s.y += 4000;
+			else if(s.y > 2000)
+				s.y -= 4000;
+		}
+		//System.out.println(stars.get(0).y);
+		for(Dust s : dust) {
+			// have space dust move past at full speed
+			s.x -= centerSpaceObj.dx;
+			s.y -= centerSpaceObj.dy;
+			if(s.x < -2000)
+				s.x += 4000;
+			else if(s.x > 2000)
+				s.x -= 4000;
+			if(s.y < -2000)
+				s.y += 4000;
+			else if(s.y > 2000)
+				s.y -= 4000;
+		}
+		for(int i = 0; i < astroSize; i++) {
+			SpaceObj s = astros.get(i);
+			s.x -= centerSpaceObj.dx;
+			s.y -= centerSpaceObj.dy;
+			if(s.x < -thisSystemWidth/2)
+				s.x += thisSystemWidth;
+			else if(s.x > thisSystemWidth/2)
+				s.x -= thisSystemWidth;
+			if(s.y < -thisSystemHeight/2)
+				s.y += thisSystemHeight;
+			else if(s.y > thisSystemHeight/2)
+				s.y -= thisSystemHeight;
+		}
+		hero.x -= centerSpaceObj.dx;
+		hero.y -= centerSpaceObj.dy;
+		
+		//System.out.println("player (" + hero.x + ", " + hero.y + ") fighter1 (" + astros.get(0).x + ", " + astros.get(0).y + ")");
+	}
+	public void intervalAccel(SpaceObj s) {
+		//synchronized(this) {
+			if(s.isAccel == 1)
+				s.accelerate();
+			if(s.isAccel > 0)
+				++s.isAccel;
+			if(s.isAccel > 4)
+				s.isAccel = 1;
+		//}
+	}
+	public void moveFromCenter(ArrayList<? extends SpaceObj> spaceObjs, int factor) {
+		for(SpaceObj s : spaceObjs) {
+			s.x -=  ((int) centerSpaceObj.dx) / factor;
+			s.y -=  ((int) centerSpaceObj.dy) / factor;
+			if(s.x < -thisSystemWidth/2)
+				s.x += thisSystemWidth;
+			else if(s.x > thisSystemWidth/2)
+				s.x -= thisSystemWidth;
+			if(s.y < -thisSystemHeight/2)
+				s.y += thisSystemHeight;
+			else if(s.y > thisSystemHeight/2)
+				s.y -= thisSystemHeight;
+		}
+	}
+	public void checkCollisions() {
+		SpaceObj weaponShot, s;
+		boolean hit;// = true;
+		synchronized (astros) {
+			for(int i = 0; i < astros.size(); i++) {
+				s = astros.get(i);
+				if(s.alive) {
+					if(s instanceof Weapon == false) {
+						//System.out.println(s.name);
+						for(int j = 0; j < astros.size(); j++) {
+							weaponShot = astros.get(j);
+							if(weaponShot instanceof Weapon) {
+								if((((Weapon)weaponShot).friendlyFire) || (weaponShot.shipID != s.shipID)) {
+									// // if(bottomA <= topB)
+									// if(s.y - s.diam <= weaponShot.y) 
+										// hit = false; 
+									// // if(topA >= bottomB)
+									// if(s.y >= weaponShot.y + weaponShot.diam)
+										// hit = false; 
+									// // if(rightA <= leftB)
+									// if(s.x + s.diam <= weaponShot.x)
+										// hit = false; 
+									// // if(leftA >= rightB)
+									// if(s.x >= weaponShot.x + weaponShot.diam)
+										// hit = false;
+										
+									if(s.y - s.diam / 2 <= weaponShot.y && 
+										s.y + s.diam / 2 >= weaponShot.y &&
+										s.x + s.diam / 2 >= weaponShot.x &&
+										s.x - s.diam / 2 <= weaponShot.x) {
+											hit = true;
+											//System.out.println(".");
+									}
+									else {	
+										//System.out.println(".");
+										hit = false;
+									}
+									//hit = true;
+									if(hit) {
+										s.structInteg -= ((Weapon)weaponShot).damage;
+										if(s.structInteg <= 0) {
+											s.countDown = 170;
+											s.alive = false;
+											s.die();
+										}
+										astros.remove(weaponShot);
+										--j;
+									}
+									//hit = true;
+								}
+							}
+						}
+					}
+				}
+			}
+			s = hero;
+			for(int j = 0; j < astros.size(); j++) {
+				weaponShot = astros.get(j);
+				if(weaponShot instanceof Weapon) {
+					if((((Weapon)weaponShot).friendlyFire) || (weaponShot.shipID != s.shipID)) {
+						// // if(bottomA <= topB)
+						// if(s.y - s.diam <= weaponShot.y) 
+							// hit = false; 
+						// // if(topA >= bottomB)
+						// if(s.y >= weaponShot.y + weaponShot.diam)
+							// hit = false; 
+						// // if(rightA <= leftB)
+						// if(s.x + s.diam <= weaponShot.x)
+							// hit = false; 
+						// // if(leftA >= rightB)
+						// if(s.x >= weaponShot.x + weaponShot.diam)
+							// hit = false;
+						//System.out.println(".");
+						if(s.y - s.diam <= weaponShot.y && 
+							s.y >= weaponShot.y + weaponShot.diam &&
+							s.x + s.diam >= weaponShot.x &&
+							s.x <= weaponShot.x + weaponShot.diam) {
+								hit = true;
+								//System.out.println(".");
+						}
+						else {
+							//System.out.println(".");
+							hit = false;
+						}
+						//hit = true;
+						if(hit) {
+							//System.out.println(".");
+							s.structInteg -= ((Weapon)weaponShot).damage;
+							if(s.structInteg <= 0) {
+								s.countDown = 140;
+								s.alive = false;
+								s.die();
+							}
+							astros.remove(weaponShot);
+							--j;
+						}
+						//hit = true;
+					}
+				}
+			}
+		}
+	}
+	public void kill() {
+		SpaceObj s;
+		synchronized (astros) {
+			for(int i = 0; i < astros.size(); i++) {
+				s = astros.get(i);
+				if(s.countDown > 0) {
+					--s.countDown;
+				}
+				if(s.countDown == 1) {
+					astros.remove(s);
+					--i;
+				}
+			}
+		}
+	}
 	public class UpdatePanel extends JPanel {
 		public UpdatePanel() {
-			this.setMinimumSize(new Dimension(width, height));
+			this.setMinimumSize(new Dimension(panelWidth, panelHeight));
 			JButton buttonStartLevel = new JButton("Start next level");
 			startLevelListener sll = new startLevelListener();
 			buttonStartLevel.addActionListener(sll);
@@ -150,295 +566,259 @@ public class Game {
 			public void actionPerformed(ActionEvent e) {
 				frame.getContentPane().remove(up);
 				frame.repaint();
-				frame.getContentPane().add(BorderLayout.CENTER, actP);
-				//frame.repaint();
-				frame.getContentPane().validate();  
-				frame.getContentPane().repaint();
-				actP.requestFocusInWindow();
+				//frame.getContentPane().add(BorderLayout.CENTER, actP);
+				//frame.getContentPane().validate();  
+				//frame.getContentPane().repaint();
+				//actP.requestFocusInWindow();
+				new Thread(new Play()).start();
 			}
 		}
 	}
 	public class ActionPanel extends JPanel {
-		//ArrayList<SpaceObj> astros = new ArrayList<SpaceObj>(); // all the SpaceObjs this round
-		// Not sure I'll include this object.  Should really use an enum.
-		//ArrayList<String> astroNames = new ArrayList<String>(); // allowed SpaceObjs
-		int level;
-		//Dimension gameDim; // dimensions of the game field (usually much larger than the window size)
-		//Position gameCenter; // location on the game field to center the ActionPanel (you could also think of it as where to point the camera)
 		public ActionPanel() {
+			// System.out.println("2 1/2");
 			level = 1;
-			MyFocusListener mfl = new MyFocusListener();
-			this.addFocusListener(mfl);
-			//gameDim = new Dimension(2000, 2000);
-			hero = new PlayerShip(0, 0);
-			spawnSpaceObjs();
+			//MyFocusListener mfl = new MyFocusListener();
+			//this.addFocusListener(mfl);
+			hero = new PlayerShip(0, 0, 1);
+			//spawnSpaceObjs();
+			makeCenter(hero);
+			myKeyListener mkl = new myKeyListener();
+			this.addKeyListener(mkl);
+			this.setFocusable(true);
 		}
-		// public void play() {
-			// // gameDim.width = ;
-			// // gameDim.height = ;
-			// //hero.gamePos.x = gameDim.width / 2;
-			// //hero.gamePos.y = gameDim.height / 2;
-			// spawnSpaceObjs();
-			// for(SpaceObj s : astros) {
-				// System.out.println("Found an object in astros");
-			// }
-			// // debug code
-			// for(SpaceObj s : astros) {
-				// s.checkHeightWidth();
-			// }
-			// hero.checkHeightWidth();
-			// boolean levelComplete = false;
-			// int tempVar = 0;
-			// int slowCtr = 0;
-			// long totalTime = new Date().getTime();
-			// while(levelComplete == false) {
-				// long msStart = new Date().getTime();
-				// updatePositions();
-				// //collisions();
-				// //possibleSpawn();
-				// this.repaint();
-				// ++hero.gamePos.x;
-				// try {
-					// // Make sure that the game runs at the same speed on all systems
-					// msStart = 16 - (new Date().getTime() - msStart);
-					// if(msStart > 0)
-						// Thread.sleep(msStart);
-					// else
-						// ++slowCtr;
-				// } catch (Exception e) {
-					// e.printStackTrace();
-				// }
-				// ++tempVar;
-				// if(tempVar == 180)
-					// levelComplete = true;
-			// }
-			// ++level;
-			// //astros.clear();
-			// if(slowCtr > 0)
-				// System.out.println(slowCtr + " loops ran at less than 60 fps");
-			// //System.out.println(new Date().getTime() + " " + totalTime + " " + (new Date().getTime() - totalTime));
-			// System.out.println("Averaged " + (1000 / ((new Date().getTime() - totalTime) / 180.0)) + " fps");
-			// nextPanel();
-		// }
-		// private void spawnSpaceObjs() {
-			// //if(level == 1)
-				// // spawn easy stuff
-			// //if(level % 3 == 0)
-				// // add the next thing to the list of possible ships
-				
-			// astros.add(new Fighter(new Position(100, 100)));
-			// astros.add(new Fighter(new Position(-100, -100)));
-		// }
-		// private void possibleSpawn() {
-			// //if(a bunch of time has passed or something)
-				// //spawnSpaceObjs();
-		// }
-		// private void updatePositions() {
-			// // the order of the following may need to change depending on when updatePositions is called
-			// // modify acceleration
-			// // modify velocity
-			// // modify position
-			
-			// // make sure masks and images are at the same position at the end of this method
-		// }
-		// private void collisions() {
-			// // make sure masks and images are at the same position when checking collisions
-		// }
-		// called by frame.repaint()
+		public void makeCenter(SpaceObj s) {
+			if(centerSpaceObj != null)
+				centerSpaceObj.isGameCenter = false;
+			centerSpaceObj = s;
+			s.isGameCenter = true;
+		}
 		public void paintComponent(Graphics g) {
+			// System.out.println("14");
 			super.paintComponent(g);
 			Graphics2D g2d = (Graphics2D) g;
 			g2d.setColor(Color.black);
-			g2d.fillRect(0, 0, this.getWidth(), this.getHeight());
-			//g2d.setColor(Color.green);
-			//g2d.fillRect(398, 398, 1, 1);
-			//g2d.setPaint(gradient);
-			drawEverything(g2d);
-			//g2d.drawImage(origShipImg, 50, 50, this);
-		}
-		// I'm sure there are some changes I could make to make this more efficient
-		public void drawEverything(Graphics2D g) {
-			//findCenter();
-			System.out.println("size of astros " + astros.size());
-			for(SpaceObj s : astros) {
-				//p = s.gamePos.getPositionInt();
-				System.out.println("Drawing " + s.name + " which is at (" + s.x + ", " + s.y + ") from center");
-				g.drawImage(s.getImage(), (int) s.x + width / 2, (int) -(s.y) + height / 2, this);
+			g2d.fillRect(0, 0, panelWidth, panelHeight);
+			/////////////////////////
+			// DRAW STARS AND DUST
+			for(Star s : stars) {
+				g2d.setColor(s.color);
+				//g2d.fillOval(40, 40, 40, 40);
+				g2d.fillOval((int) (s.x + panelWidth / 2), (int) (-(s.y) + panelHeight / 2), s.diam, s.diam);
+				//System.out.println("Star at (" + (s.x + panelWidth / 2) + ", " + (-(s.y) + panelHeight / 2) + ")");
+				//System.out.println("Star with diameter " + s.diam);
 			}
-			//p = hero.gamePos.getPositionInt();
-			System.out.println("Drawing " + hero.name + " which is at (" + hero.x + ", " + hero.y + ") from center");
-			g.drawImage(hero.getImage(), (int) hero.x + width / 2, (int) -(hero.y) + height / 2, this);
+			for(Dust s : dust) {
+				g2d.setColor(s.color);
+				g2d.fillOval((int) (s.x + panelWidth / 2), (int) (-(s.y) + panelHeight / 2), s.diam, s.diam);
+			}
+			//System.out.println(stars.size() + " stars");
+			//g2d.setColor(Color.blue);
+			//g2d.fillOval(40, 40, 40, 40);
+			// Draw planets, space stations
+			// Draw non-interactive debris
+			// Draw projectiles
+			/////////////////////////
+			// DRAW SHIPS AND WEAPONS
+			AffineTransform origXform;
+			AffineTransform newXform;
+			int xRot;
+			int yRot;
+			int frameX;
+			int frameY;
+			synchronized (astros) {
+				SpaceObj s;
+				//for(SpaceObj s : astros) {
+				for(int i = 0; i < astros.size(); i++) {
+					// System.out.println("frame space (" + (((int) s.x) + panelWidth / 2) + ", " + (-((int) s.y) + panelHeight / 2) + "), game space (" +
+						// s.x + ", " + s.y + ")");
+					s = astros.get(i);
+					if(s instanceof Weapon) {
+						g2d.setColor(Color.yellow);
+						g2d.fillOval((int) (s.x + panelWidth / 2 - s.diam / 2), (int) (-(s.y) + panelHeight / 2 - s.diam / 2), s.diam, s.diam);
+					}
+					else {
+						origXform = g2d.getTransform();
+						newXform = (AffineTransform)(origXform.clone());
+						//center of rotation is center of the panel
+						xRot = ((int) s.x) + panelWidth / 2;
+						yRot = -((int) s.y) + panelHeight / 2;
+						newXform.rotate(-s.angle, xRot, yRot);
+						g2d.setTransform(newXform);
+						//draw image centered in panel
+						frameX = ((int) s.x) + panelWidth / 2 - s.getImage().getWidth(this)/2;
+						frameY = -((int) s.y) + panelHeight / 2 - s.getImage().getHeight(this)/2;
+						g2d.drawImage(s.getImage(), frameX, frameY, this);
+						g2d.setTransform(origXform);
+						
+						//g2d.drawImage(astros.get(i).getImage(), ((int) astros.get(i).x) + panelWidth / 2, -((int) astros.get(i).y) + panelHeight / 2, this);
+					}
+				}
+			}
+			//System.out.println("Drawing " + hero.name + " which is at (" + hero.x + ", " + hero.y + ") from center");
+			//g2d.drawImage(hero.getImage(), hero.x + panelWidth / 2, -(hero.y) + panelHeight / 2, this);
+			
+			origXform = g2d.getTransform();
+			newXform = (AffineTransform)(origXform.clone());
+			//center of rotation is center of the panel
+			xRot = panelWidth/2;
+			yRot = panelHeight/2;
+			newXform.rotate(-hero.angle, xRot, yRot);
+			g2d.setTransform(newXform);
+			//draw image centered in panel
+			frameX = ((int) hero.x) + panelWidth / 2 - hero.getImage().getWidth(this)/2;
+			frameY = -((int) hero.y) + panelHeight / 2 - hero.getImage().getHeight(this)/2;
+			g2d.drawImage(hero.getImage(), frameX, frameY, this);
+			g2d.setTransform(origXform);
+			
+			/////////////////////////
+			// PAINT SIDEBAR
+			g2d.setColor(Color.black);
+			g2d.fillRect(panelWidth, 0, sideMenuWidth, panelHeight);
+			g2d.setColor(new Color(0xFF808080));
+			g2d.fillRect(panelWidth, 0, 4, panelHeight);
+			
+			/////////////////////////
+			// PAINT MINIMAP
+			g2d.setColor(Color.red);
+			g2d.drawRect(panelWidth + 4 + mapBorder - 1, mapBorder - 1, mapWidth + 2, mapWidth + 2);
+			// g2d.setColor(Color.black);
+			// g2d.fillRect(panelWidth + 4 + mapBorder, mapBorder, mapWidth, mapWidth);
+			// paint all ships, space stations, planets, and other important objects in minimap
+			
+			// / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+			// All these large calculations should be stored in variables before
+			//   each new level begins to save some computations.  (At least the parts of the
+			//   calculations that don't depend on current position of the object.)
+			// / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+			
+			synchronized (astros) {
+				//for(SpaceObj s : astros) {
+				for(int i = 0; i < astros.size(); i++) {
+					if(astros.get(i) instanceof Weapon == false) {
+						// this if statement is extra for later
+						// if(s.isHostile)
+						g2d.setColor(Color.red);
+						// else
+						// g2d.setColor(Color.green);
+						g2d.fillOval(((int) (astros.get(i).x * (double) mapWidth / (double) thisSystemWidth) + (mapWidth / 2) + panelWidth + mapBorder + 4), -((int) (astros.get(i).y * (double) mapWidth / (double) thisSystemHeight)) + (mapWidth / 2) + mapBorder, 3, 3);
+						//System.out.println("Drawing fighter at (" + ((int) (s.x * (double) mapWidth / (double) thisSystemWidth) + (mapWidth / 2) + panelWidth + mapBorder + 4) + ", " + (-((int) (s.y * (double) mapWidth / (double) thisSystemHeight) + (mapWidth / 2)) + mapBorder) + ") in frame space");
+						//System.out.println( ((s.x * ((double) mapWidth)) / ((double) thisSystemWidth)));
+						//System.out.println((s.x * ((double)mapWidth) / ((double)thisSystemWidth)));
+					}
+				}
+			}
+			g2d.setColor(Color.blue);
+			//System.out.println("Drawing player at (" + ((int) (hero.x * (double) mapWidth / (double) thisSystemWidth) + (mapWidth / 2) + panelWidth + mapBorder + 4) + ", " + (-((int) (hero.y * (double) mapWidth / (double) thisSystemHeight) + (mapWidth / 2)) + mapBorder) + ") in frame space");
+			g2d.fillOval((int) (hero.x * (double) mapWidth / (double) thisSystemWidth) + (mapWidth / 2) + panelWidth + mapBorder + 4, -((int) (hero.y * (double) mapWidth / (double) thisSystemHeight)) + (mapWidth / 2) + mapBorder, 3, 3);
+			// paint rectangle around visible field on minimap
+			g2d.setColor(new Color(0xFF00C000));
+			//g2d.setColor(Color.green);
+			g2d.drawRect((int) ((-panelWidth / 2) * (double) mapWidth / (double) thisSystemWidth) + (mapWidth / 2) + panelWidth + mapBorder + 4, 
+				-((int) ((panelHeight / 2) * (double) mapWidth / (double) thisSystemHeight)) + (mapWidth / 2) + mapBorder, 
+				(int) (panelWidth * (double) mapWidth / (double) thisSystemWidth), 
+				(int) (panelHeight * (double) mapWidth / (double) thisSystemHeight));
+			//g2d.flush();
 		}
-		public void findCenter() {
-			//gameCenter = hero.gamePos;
-		}		
-		// public Position flip(Position yup) {
-			// return new Position(yup.x, height - yup.y);
-		// }
 		public void nextPanel() {
 			frame.getContentPane().remove(this);
-			frame.repaint();
-			frame.getContentPane().add(BorderLayout.CENTER, up);
-			//frame.pack();
 			//frame.repaint();
+			frame.getContentPane().add(BorderLayout.CENTER, up);
 			frame.getContentPane().validate();  
 			frame.getContentPane().repaint(); 
 		}
-		public class MyFocusListener implements FocusListener {
-			public void focusGained(FocusEvent e) {
-				if(e.isTemporary() == false) {
-					//System.out.println("Got focus");
-					//frame.getContentPane().add(BorderLayout.CENTER, this);
-					// frame.getContentPane().validate();  
-					// frame.getContentPane().repaint();
-					play();
+		public class myKeyListener extends KeyAdapter {
+			public void keyPressed(KeyEvent e) {
+				int keyCode = e.getKeyCode();
+				if(keyCode == KeyEvent.VK_LEFT)
+					hero.turningLeft = true;
+				if(keyCode == KeyEvent.VK_RIGHT)
+					hero.turningRight = true;
+				if(keyCode == KeyEvent.VK_UP)
+					if(hero.isAccel == 0)
+						hero.isAccel = 1;
+				// if(e.getKeyCode() == KeyEvent.VK_DOWN)
+				
+				if(keyCode == KeyEvent.VK_SPACE) {
+					if(hero.firing == 0)
+						hero.firing = 1;
+					//System.out.println("Firing");
 				}
+				if(e.getKeyCode() == KeyEvent.VK_ESCAPE)
+					System.exit(0);
+				e.consume();
+				//update();
+				//System.out.println(e.getKeyCode() + " " + (KeyEvent.VK_RIGHT | KeyEvent.VK_LEFT));
 			}
-			public void focusLost(FocusEvent e) {}
+			public void keyTyped(KeyEvent e) {
+				// if(e. == 'a') {
+				// }
+				// else if(e. == 's') {
+				// }
+				// else if(e. == 'd') {
+				// }
+				// else if(e. == 'f') {
+				// }
+			}
+			public void keyReleased(KeyEvent e) {
+				int keyCode = e.getKeyCode();
+				if (keyCode == KeyEvent.VK_UP) {
+					//synchronized(this) {
+						hero.isAccel = 0;
+					//}
+				} 
+				// else if (keyCode == KeyEvent.VK_DOWN) {
+					// down = false;
+				// } 
+				else if (keyCode == KeyEvent.VK_LEFT) {
+					hero.turningLeft = false;
+				}
+				else if (keyCode == KeyEvent.VK_RIGHT) {
+					hero.turningRight = false;
+				}
+				else if(keyCode == KeyEvent.VK_SPACE) {
+					//synchronized(this) {
+						hero.firing = 0;
+						//System.out.println("Stopped firing");
+					//}
+				}
+				e.consume();
+				//update();
+			}
 		}
-	}
-}	
-	
-	
-	
-	
-	//////////////////////////////////
-	//
-	// Itty bitty goals:
-	//
-	// (They're not really itty bitty at all, but relative to doing EVERYTHING, they are quite a bit smaller.)
-	//
-	// Start on the upgrades panel, music plays, m turns music on and off.
-	// The upgrades panel just uses regular JLabels and JTextBoxes, and looks ugly.
-	// Upon clicking start next level, next level starts.
-	// The action game panel should be just as good in this version as in the big goals version.
-	// When all enemies are destroyed, go back to upgrades page.
-	//
-	// Consider using integers or longs instead of doubles for representing position.
-	//
-	//////////////////////////////////
-	
-	
-	
-	
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	//																														//
-	//																														//
-	//		BEGIN, BIG GIANT LONG TERM GOALS:																				//
-	//																														//
-	//																														//
-	//																														//
-																															//
-																															//
-																															//
-																															//
-																															//
-	
-	// Actually, FORGET THE MENU BAR.  Do everything in overlay menus.
-	
-	// Game contains gui frame
-	// frame contains menu bar* at top and current game panel in center
-	// Game switches to a different game panel from the menu bar* AND from
-	//   menu panels that appear and overlay game panels
-	// Game sends a pause command to the game panels (either all of the game
-	//   panels or the currently active panel) using method calls to the game
-	//   panel objects.
-	// The exit button on the window should cause a prompt asking if you want to quit
-	//   without saving, and handle it in a clear and intuitive way.
-	
-	// No panels will be translucent.  Menus will be smaller than the game panels.
-	//   Menus will be dark with light (but not bright) text and button rectangles.
-	// All menu panels will be the same size.
-	// The action game panel will be as large as the playing area.  If the window is
-	//   smaller than this, the visible action game panel will center on the player's ship.
-	
-	// Resizing the window will always pause, unless the user selects an option that
-	//   turns this off.
-	// There will be no maximum window size.  The game panel will be placed in the center
-	//   with a black border if there is extra space.
-	
-	// All game panels will respond to esc by dimming the game panel and opening
-	//   the file menu
-	// Selecting any part of the menu bar* with the mouse will automatically pause.
-	// The action game panel will respond to arrow keys, a few keys for weapons
-	//   and other powers, and p for pause
-	// The upgrade game panel will respond to arrow keys and enter, which will change
-	//   which "buttons" are highlighted.  There will be a back button on appropriate
-	//   menu panels.  There will not be a save changes button.  All changes will take
-	//   effect immediately.
-	
-	// When m is pushed to turn music on/off, music should either be muted until the end of the song,
-	//   and then pause at the beginning of the next song, or music should be paused
-	
-	// 1. Menu bar* contains "Start Menu", "Options", and "Quit".  When playing, a "Save" option will
-	//      appear.
-	// 2. Start menu (a game panel) displays with "buttons" for new game, load, options, and exit
-	// 3. If they select new game, a game panel with instructions will appear, containing a
-	//      "continue" button and a place to enter their name.  Then the upgrade game panel will appear.
-	//    If they select options or load, a black game panel will appear overlaid by the options menu
-	//      or the load menu (both are menu panels).
-	// 4. The upgrade game panel will list what's available, what the player has, and how much of each.
-	//    The player can save from the menu bar* or from the menu panel that appears when they press esc.
-	//    If they press esc, a modified options menu will overlay the upgrade game panel that
-	//      contains a save option and any other changes that make sense (like taking out options that
-	//      shouldn't or can't be changed while playing the game.)
-	//    If the player saves halfway through picking what they want, the save file will include their
-	//      partial choices.
-	//    The player can take back money and other choices made during this upgrade phase with no penalty.
-	//      This will need to be included in the save file as well.
-	//    When the player is finished, there will be a begin next level button, and upon selecting it, they
-	//      will be prompted if they are ready to continue.
-	// 5. The load menu will need multiple panels or a scroll bar box that lengthens as they save more files.
-	//    I'm leaning toward not limiting how many saves they can make.  There should be load, delete, and back
-	//      buttons.
-	// 6. 
-	
-	// * Actually, FORGET THE MENU BAR.  Do everything in overlay menus.
-	
-	// All options in the options menus should be saved in a single file used for all players
-	
-	// Options in the main options menu:
-	
-	// pause on window resize
-	// full screen mode
-	// Relist the hotkeys (p:pause, esc:options, m:music, s:sound effects)
-	// Allow them to change the keyboard layout (any and all keys, even esc; also allow them to chain shift, ctrl, and alt)
-	// Allow them to save option settings in a file
-	// Allow them to reset everything to defaults.
-	// Allow them to reset any individual thing to its default.
-	
-	
-	// Modifications for the in-game options menu:   (it will be slightly different than the options menu that appears from all other panels)
-	
-	// save option  (I think I want this during the upgrades phase instead or as well)
-	
-	
-	// Extras
-	
-	// Make an invisible observer ship that becomes controllable when paused, so the player can look around
-	// A stats page would be cool.
-	// Sounds that originate further away should be quieter.
-	// If a sound originates from the left, the left speaker should produce more of the sound than the right speaker, and
-	//   vice versa.  This should not be noticeable for sounds that originate nearby, and should be most noticeable at
-	//   the greatest distance possible, but it shouldn't stand out.
-	// Make the music cycle through whatever song files are in a certain folder, regardless of the songs' names.
-	// Make keyboard buttons for pause music, next song, and last song.
-	// Add options to turn on/off all or particular sound effects.
-	
-	// * Actually, FORGET THE MENU BAR.  Do everything in overlay menus.
+		public void update() {
+			StringBuilder str = new StringBuilder();
 
-	
-																															//	
-																															//	
-																															//	
-																															//
-	//																														//
-	//																														//
-	//		END, BIG GIANT LONG TERM GOALS:																					//
-	//																														//
-	//																														//
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	
-	
-	
-	
+			if (hero.isAccel > 0) {
+				str.append(" [up]");
+			}
+
+			// if (down) {
+			// if (ctrldown) {
+			// str.append(" [ctrl-down]");
+			// } else {
+			// str.append(" [down]");
+			// }
+			// }
+
+			if (hero.turningLeft) {
+				str.append(" [left]");
+			}
+
+			if (hero.turningRight) {
+				str.append(" [right]");
+			}
+
+			System.out.println(str.toString());
+		}
+		// public class MyFocusListener implements FocusListener {
+			// public void focusGained(FocusEvent e) {
+				// if(e.isTemporary() == false) {
+					// System.out.println("Got focus");
+					// play();
+				// }
+			// }
+			// public void focusLost(FocusEvent e) {}
+		// }
+	}
+}

@@ -1,19 +1,19 @@
 import java.awt.Color;
-public class Star {
-	public int x;
-	public int y;
+public class Star extends SpaceObj {
 	public int diam;
 	public Color color;
 	protected Star() {}
 	public Star(int width, int height) {
+		// maxVelocity == 0
+		super(0);
 		int signX = -1;
 		if(Math.random() > .5)
 			signX = 1;
 		int signY = -1;
 		if(Math.random() > .5)
 			signY = 1;
-		x = (int) (Math.random() * (width / 2)) * signX;
-		y = (int) (Math.random() * (height / 2)) * signY;
+		x = (Math.random() * (width / 2)) * signX;
+		y = (Math.random() * (height / 2)) * signY;
 		//System.out.println("int (" + x + ", " + y + ")");
 		diam = (int) (Math.random() * 5);
 		int temp = (int) (Math.random() * 0x00FFFFFF);

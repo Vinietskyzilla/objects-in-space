@@ -1,1 +1,1 @@
-Main-Class: Game2
+Main-Class: Game
