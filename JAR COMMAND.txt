@@ -1,1 +1,1 @@
-jar -cvmf manifest.txt "Objects in Space.jar" *.class *.png
+javac *.javajar -cvmf manifest.txt "Objects in Space.jar" *.class *.png
