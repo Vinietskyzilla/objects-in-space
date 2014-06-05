@@ -17,14 +17,6 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.awt.geom.AffineTransform;
 
-// Note to self, or, How I Fixed the astros Concurrency Bug
-//
-// Not sure how much synchronizing had to do with it.  I finally just went and took out all iterations and then
-//   made everything check index bounds repeatedly.  Also, there may still be a problem in the paint code where
-//   it tries to call get(i) but i is null and it throws an exception.  Not sure how to fix that to guarantee
-//   it never does that, but you could... already did it.  Made it recheck size every time. :P
-
-
 /**
   Where Objects in Space begins.
 
@@ -78,9 +70,13 @@ public class Game {
   */
   PlayerShip hero;
   /**
-    Contains all ships, projectiles, and other interactive objects.
+    Contains all ships.
   */
-  java.util.List<SpaceObj> astros = Collections.synchronizedList(new LinkedList<SpaceObj>());
+  java.util.List<Ship> ships = Collections.synchronizedList(new LinkedList<Ship>());
+  /**
+    Contains all projectiles.
+  */
+  java.util.List<Weapon> projectiles = Collections.synchronizedList(new LinkedList<Weapon>());
   /**
     Contains positions, diameters, and colors of non-interactive background stars.
   */
@@ -185,8 +181,9 @@ public class Game {
       populateStars(stars);
       dust.clear();
       populateDust(dust);
-      astros.clear();
-      spawnSpaceObjs();
+      ships.clear();
+      projectiles.clear();
+      spawnShips();
       hero.turningRight = false;
       hero.turningLeft = false;
       hero.isAccel = 0;
@@ -207,6 +204,7 @@ public class Game {
       while(levelComplete == false) {
         long msStart = new Date().getTime();
         fireWeapons();
+        expireProjectiles();
         updatePositions();
         checkCollisions();
         kill();
@@ -234,16 +232,10 @@ public class Game {
     }
   }
   /**
-    Returns true if there are no non-Weapon objects in astros (if all ships besides the PlayerShip hero have been eliminated).
+  
   */
   public boolean enemiesRemain() {
-    synchronized (astros) {
-      for(SpaceObj s : astros) {
-        if(s instanceof Weapon == false)
-          return true;
-      }
-    }
-    return false;
+    return ships.size() > 0 ? true : false;
   }
   /**
 
@@ -264,13 +256,13 @@ public class Game {
   /**
 
   */
-  private void spawnSpaceObjs() {
+  private void spawnShips() {
       // DEBUG
       Fighter f = new Fighter(100, 100, getNextShipID() + level);
       //actP.makeCenter(f);
-      astros.add(f);
-      astros.add(new Fighter(-100, -100, getNextShipID() + level));
-      astros.add(new Fighter(-200, 200, getNextShipID() + level * 2));
+      ships.add(f);
+      ships.add(new Fighter(-100, -100, getNextShipID() + level));
+      ships.add(new Fighter(-200, 200, getNextShipID() + level * 2));
   }
   /**
 
@@ -283,26 +275,24 @@ public class Game {
   */
   public void fireWeapons() {
     Weapon w;
-    int astroSize = astros.size();
-    synchronized(astros) {
-      for(int i = 0; i < astroSize; i++) {
-        SpaceObj s = astros.get(i);
-        if(s.selectedWeapon != -1) {
-          w = getWeapon(s);
-          if(s.firing == 1) {
-            // fire!
-            astros.add(w);
-          }
-          if(s.firing > 0)
-            ++s.firing;
-          if(s.firing > w.fireRateInverse)
-            s.firing = 1;
+    int shipsSize = ships.size();
+    synchronized(ships) {
+      for(int i = 0; i < shipsSize; i++) {
+        Ship s = ships.get(i);
+        w = getWeapon(s);
+        if(s.firing == 1) {
+          // fire!
+          projectiles.add(w);
         }
+        if(s.firing > 0)
+          ++s.firing;
+        if(s.firing > w.fireRateInverse)
+          s.firing = 1;
       }
       w = getWeapon(hero);
       if(hero.firing == 1) {
         // fire!
-        astros.add(w);
+        projectiles.add(w);
       }
       if(hero.firing > 0)
         ++hero.firing;
@@ -313,30 +303,31 @@ public class Game {
   /**
 
   */
-  public Weapon getWeapon(SpaceObj s) {
-    if(s.selectedWeapon == Weapon.LB) {
-      // LaserBullet
-      return new LaserBullet(s.x, s.y, s.dx, s.dy, s.maxVelocity, s.accelRate, s.angle, s.shipID);
+  public Weapon getWeapon(Ship s) {
+    switch(s.selectedWeapon) {
+      //case Weapon.SW:
+      //  return new SomeWeapon(...);
+      //  break;
+      default:
+        return new LaserBullet(s.x, s.y, s.dx, s.dy, s.maxVelocity, s.accelRate, s.angle, s.shipID);
     }
-    // else if(s.selectedWeapon == ) {
-
-    // }
-    // else if(s.selectedWeapon == ) {
-
-    // }
-    // else if(s.selectedWeapon == ) {
-
-    // }
-    // else if(s.selectedWeapon == ) {
-
-    // }
-    // else if(s.selectedWeapon == ) {
-
-    // }
-    return new LaserBullet(s.x, s.y, s.dx, s.dy, s.maxVelocity, s.accelRate, s.angle, s.shipID);
   }
-  // When this method is all finished see if it's possible to combine
-  //   all the foreach loops with astros into just one foreach loop.
+  /**
+
+  */
+  private void expireProjectiles() {
+    int projectilesSize = projectiles.size();
+    synchronized (projectiles) {
+      for(int i = 0; i < projectilesSize; i++) {
+        Weapon w = projectiles.get(i);
+        ++w.cyclesLived;
+        if(w.cyclesLived >= w.timeToLive) {
+          projectiles.remove(w);
+          --projectilesSize;
+        }
+      }
+    }
+  }
   /**
 
   */
@@ -356,9 +347,9 @@ public class Game {
         hero.angle += 2*Math.PI;
     }
 
-    int astroSize = astros.size();
-    for(int i = 0; i < astroSize; i++) {
-      SpaceObj s = astros.get(i);
+    int shipsSize = ships.size();
+    for(int i = 0; i < shipsSize; i++) {
+      Ship s = ships.get(i);
 
       if(s.turningLeft) {
         s.angle += s.turnRate;
@@ -372,37 +363,56 @@ public class Game {
       }
     }
 
-    ///////////////////////
-    // modify velocity
-    for(int i = 0; i < astroSize; i++) {
-      intervalAccel(astros.get(i));
+    /////////////////////////////////
+    // modify velocity and position
+    for(int i = 0; i < shipsSize; i++) {
+      Ship s = ships.get(i);
+      intervalAccel(s);
+      s.x += s.dx;
+      s.y += s.dy;
+    }
+    int projectilesSize = projectiles.size();
+    for(int i = 0; i < projectilesSize; i++) {
+      Weapon w = projectiles.get(i);
+      intervalAccel(w);
+      w.x += w.dx;
+      w.y += w.dy;
     }
     intervalAccel(hero);
-
-    ///////////////////////
-    // modify position
-
-    // make sure masks and images are at the same position at the end of this method
-
-    // move everything based on the current velocity of each object
-    synchronized (astros) {
-      for(int i = 0; i < astroSize; i++) {
-        SpaceObj s = astros.get(i);
-        s.x += s.dx;
-        s.y += s.dy;
-        if(s instanceof Weapon) {
-          ++((Weapon) s).cyclesLived;
-          if(((Weapon) s).cyclesLived >= ((Weapon) s).timeToLive) {
-            astros.remove(s);
-            astroSize = astros.size();
-          }
-        }
-      }
-    }
     hero.x += hero.dx;
     hero.y += hero.dy;
 
     // move everything based on movement of centerSpaceObj
+    for(int i = 0; i < shipsSize; i++) {
+      Ship s = ships.get(i);
+      s.x -= centerSpaceObj.dx;
+      s.y -= centerSpaceObj.dy;
+      if(s.x < -thisSystemWidth/2)
+        s.x += thisSystemWidth;
+      else if(s.x > thisSystemWidth/2)
+        s.x -= thisSystemWidth;
+      if(s.y < -thisSystemHeight/2)
+        s.y += thisSystemHeight;
+      else if(s.y > thisSystemHeight/2)
+        s.y -= thisSystemHeight;
+    }
+    for(int i = 0; i < projectilesSize; i++) {
+      Weapon w = projectiles.get(i);
+      w.x -= centerSpaceObj.dx;
+      w.y -= centerSpaceObj.dy;
+      if(w.x < -thisSystemWidth/2)
+        w.x += thisSystemWidth;
+      else if(w.x > thisSystemWidth/2)
+        w.x -= thisSystemWidth;
+      if(w.y < -thisSystemHeight/2)
+        w.y += thisSystemHeight;
+      else if(w.y > thisSystemHeight/2)
+        w.y -= thisSystemHeight;
+    }
+    
+    centerSpaceObj.x -= centerSpaceObj.dx;
+    centerSpaceObj.y -= centerSpaceObj.dy;
+
     for(Star s : stars) {
       // change by movement divided by 3 so that stars move slowly and seem far away
       // (Parallaxing!)
@@ -430,21 +440,6 @@ public class Game {
       else if(s.y > 2000)
         s.y -= 4000;
     }
-    for(int i = 0; i < astroSize; i++) {
-      SpaceObj s = astros.get(i);
-      s.x -= centerSpaceObj.dx;
-      s.y -= centerSpaceObj.dy;
-      if(s.x < -thisSystemWidth/2)
-        s.x += thisSystemWidth;
-      else if(s.x > thisSystemWidth/2)
-        s.x -= thisSystemWidth;
-      if(s.y < -thisSystemHeight/2)
-        s.y += thisSystemHeight;
-      else if(s.y > thisSystemHeight/2)
-        s.y -= thisSystemHeight;
-    }
-    hero.x -= centerSpaceObj.dx;
-    hero.y -= centerSpaceObj.dy;
   }
   /**
 
@@ -460,68 +455,56 @@ public class Game {
   /**
 
   */
+  public void intervalMove(SpaceObj s) {
+  }
+  /**
+
+  */
   public void checkCollisions() {
-    SpaceObj weaponShot, s;
-    boolean hit;// = true;
-    synchronized (astros) {
-      for(int i = 0; i < astros.size(); i++) {
-        s = astros.get(i);
-        if(s.alive) {
-          if(s instanceof Weapon == false) {
-            for(int j = 0; j < astros.size(); j++) {
-              weaponShot = astros.get(j);
-              if(weaponShot instanceof Weapon) {
-                if((((Weapon)weaponShot).friendlyFire) || (weaponShot.shipID != s.shipID)) {
-                  if(s.y - s.diam / 2 <= weaponShot.y &&
-                    s.y + s.diam / 2 >= weaponShot.y &&
-                    s.x + s.diam / 2 >= weaponShot.x &&
-                    s.x - s.diam / 2 <= weaponShot.x) {
-                      hit = true;
-                  }
-                  else {
-                    hit = false;
-                  }
-                  if(hit) {
-                    s.structInteg -= ((Weapon)weaponShot).damage;
-                    if(s.structInteg <= 0) {
-                      s.countDown = 170;
-                      s.alive = false;
-                      s.die();
-                    }
-                    astros.remove(weaponShot);
-                    --j;
-                  }
-                }
+    Weapon w;
+    Ship s;
+    boolean hit;
+    for(int i = 0; i < ships.size(); i++) {
+      s = ships.get(i);
+      if(s.alive) {
+        for(int j = 0; j < projectiles.size(); j++) {
+          w = projectiles.get(j);
+          if(w.friendlyFire || (w.shipID != s.shipID)) {
+            hit = s.y - s.diam / 2 <= w.y &&
+              s.y + s.diam / 2 >= w.y &&
+              s.x + s.diam / 2 >= w.x &&
+              s.x - s.diam / 2 <= w.x;
+            if(hit) {
+              s.structInteg -= w.damage;
+              if(s.structInteg <= 0) {
+                s.countDown = 170;
+                s.alive = false;
+                s.die();
               }
+              projectiles.remove(w);
+              --j;
             }
           }
         }
       }
-      s = hero;
-      for(int j = 0; j < astros.size(); j++) {
-        weaponShot = astros.get(j);
-        if(weaponShot instanceof Weapon) {
-          if((((Weapon)weaponShot).friendlyFire) || (weaponShot.shipID != s.shipID)) {
-            if(s.y - s.diam <= weaponShot.y &&
-              s.y >= weaponShot.y + weaponShot.diam &&
-              s.x + s.diam >= weaponShot.x &&
-              s.x <= weaponShot.x + weaponShot.diam) {
-                hit = true;
-            }
-            else {
-              hit = false;
-            }
-            if(hit) {
-              s.structInteg -= ((Weapon)weaponShot).damage;
-              if(s.structInteg <= 0) {
-                s.countDown = 140;
-                s.alive = false;
-                s.die();
-              }
-              astros.remove(weaponShot);
-              --j;
-            }
+    }
+    s = hero;
+    for(int j = 0; j < projectiles.size(); j++) {
+      w = projectiles.get(j);
+      if(w.friendlyFire || (w.shipID != s.shipID)) {
+        hit = s.y - s.diam / 2 <= w.y &&
+          s.y + s.diam / 2 >= w.y &&
+          s.x + s.diam / 2 >= w.x &&
+          s.x - s.diam / 2 <= w.x;
+        if(hit) {
+          s.structInteg -= w.damage;
+          if(s.structInteg <= 0) {
+            s.countDown = 170;
+            s.alive = false;
+            s.die();
           }
+          projectiles.remove(w);
+          --j;
         }
       }
     }
@@ -530,15 +513,15 @@ public class Game {
 
   */
   public void kill() {
-    SpaceObj s;
-    synchronized (astros) {
-      for(int i = 0; i < astros.size(); i++) {
-        s = astros.get(i);
+    Ship s;
+    synchronized (ships) {
+      for(int i = 0; i < ships.size(); i++) {
+        s = ships.get(i);
         if(s.countDown > 0) {
           --s.countDown;
         }
         if(s.countDown == 1) {
-          astros.remove(s);
+          ships.remove(s);
           --i;
         }
       }
@@ -619,28 +602,30 @@ public class Game {
       int yRot;
       int frameX;
       int frameY;
-      synchronized (astros) {
-        SpaceObj s;
-        for(int i = 0; i < astros.size(); i++) {
-          s = astros.get(i);
-          if(s instanceof Weapon) {
-            g2d.setColor(Color.yellow);
-            g2d.fillOval((int) (s.x + panelWidth / 2 - s.diam / 2), (int) (-(s.y) + panelHeight / 2 - s.diam / 2), s.diam, s.diam);
-          }
-          else {
-            origXform = g2d.getTransform();
-            newXform = (AffineTransform)(origXform.clone());
-            //center of rotation is position of object in the panel
-            xRot = ((int) s.x) + panelWidth / 2;
-            yRot = -((int) s.y) + panelHeight / 2;
-            newXform.rotate(-s.angle, xRot, yRot);
-            g2d.setTransform(newXform);
-            //draw rotated image
-            frameX = ((int) s.x) + panelWidth / 2 - s.getImage().getWidth(this)/2;
-            frameY = -((int) s.y) + panelHeight / 2 - s.getImage().getHeight(this)/2;
-            g2d.drawImage(s.getImage(), frameX, frameY, this);
-            g2d.setTransform(origXform);
-          }
+      synchronized (ships) {
+        Ship s;
+        for(int i = 0; i < ships.size(); i++) {
+          s = ships.get(i);
+          origXform = g2d.getTransform();
+          newXform = (AffineTransform)(origXform.clone());
+          //center of rotation is position of object in the panel
+          xRot = ((int) s.x) + panelWidth / 2;
+          yRot = -((int) s.y) + panelHeight / 2;
+          newXform.rotate(-s.angle, xRot, yRot);
+          g2d.setTransform(newXform);
+          //draw rotated image
+          frameX = ((int) s.x) + panelWidth / 2 - s.getImage().getWidth(this)/2;
+          frameY = -((int) s.y) + panelHeight / 2 - s.getImage().getHeight(this)/2;
+          g2d.drawImage(s.getImage(), frameX, frameY, this);
+          g2d.setTransform(origXform);
+        }
+      }
+      synchronized (projectiles) {
+        Weapon s;
+        for(int i = 0; i < projectiles.size(); i++) {
+          s = projectiles.get(i);
+          g2d.setColor(Color.yellow);
+          g2d.fillOval((int) (s.x + panelWidth / 2 - s.diam / 2), (int) (-(s.y) + panelHeight / 2 - s.diam / 2), s.diam, s.diam);
         }
       }
 
@@ -675,16 +660,14 @@ public class Game {
       //   calculations that don't depend on current position of the object.)
       // / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 
-      synchronized (astros) {
-        for(int i = 0; i < astros.size(); i++) {
-          if(astros.get(i) instanceof Weapon == false) {
-            // this if statement is extra for later
-            // if(s.isHostile)
-            g2d.setColor(Color.red);
-            // else
-            // g2d.setColor(Color.green);
-            g2d.fillOval(((int) (astros.get(i).x * (double) mapWidth / (double) thisSystemWidth) + (mapWidth / 2) + panelWidth + mapBorder + 4), -((int) (astros.get(i).y * (double) mapWidth / (double) thisSystemHeight)) + (mapWidth / 2) + mapBorder, 3, 3);
-          }
+      synchronized (ships) {
+        for(int i = 0; i < ships.size(); i++) {
+          // this if statement is extra for later
+          // if(s.isHostile)
+          g2d.setColor(Color.red);
+          // else
+          // g2d.setColor(Color.green);
+          g2d.fillOval(((int) (ships.get(i).x * (double) mapWidth / (double) thisSystemWidth) + (mapWidth / 2) + panelWidth + mapBorder + 4), -((int) (ships.get(i).y * (double) mapWidth / (double) thisSystemHeight)) + (mapWidth / 2) + mapBorder, 3, 3);
         }
       }
       g2d.setColor(Color.blue);

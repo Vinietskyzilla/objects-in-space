@@ -81,14 +81,6 @@ public abstract class SpaceObj {
   /**
 
   */
-  public ArrayList<Integer> weapons;
-  /**
-
-  */
-  public int selectedWeapon; // index of selected weapon
-  /**
-
-  */
   public int diam;
   /**
 
@@ -109,8 +101,6 @@ public abstract class SpaceObj {
   public SpaceObj(double mv) {
     maxVelocity = mv;
     alive = true;
-    selectedWeapon = 0;
-    weapons = new ArrayList<Integer>();
     countDown = 0;
   }
   /**

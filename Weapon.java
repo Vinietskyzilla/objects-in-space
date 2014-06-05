@@ -33,6 +33,5 @@ public class Weapon extends SpaceObj {
   public Weapon(double mv) {
     super(mv);
     cyclesLived = 0;
-    selectedWeapon = -1;
   }
 }

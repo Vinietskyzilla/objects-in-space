@@ -4,7 +4,7 @@ import java.awt.image.BufferedImage;
 /**
 
 */
-public class PlayerShip extends SpaceObj {
+public class PlayerShip extends Ship {
   /**
 
   */

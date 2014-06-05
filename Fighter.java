@@ -5,7 +5,7 @@ import java.awt.image.BufferedImage;
 /**
 
 */
-public class Fighter extends SpaceObj {
+public class Fighter extends Ship {
   /**
 
   */
