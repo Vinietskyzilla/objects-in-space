@@ -77,11 +77,10 @@ public class Game {
     Player's ship.
   */
   PlayerShip hero;
-  // java.util.List<SpaceObj> astros = Collections.synchronizedList(new ArrayList<SpaceObj>());
   /**
     Contains all ships, projectiles, and other interactive objects.
   */
-  java.util.List<SpaceObj> astros = new Vector<SpaceObj>();
+  java.util.List<SpaceObj> astros = Collections.synchronizedList(new LinkedList<SpaceObj>());
   /**
     Contains positions, diameters, and colors of non-interactive background stars.
   */
@@ -266,7 +265,10 @@ public class Game {
 
   */
   private void spawnSpaceObjs() {
-      astros.add(new Fighter(100, 100, getNextShipID() + level));
+      // DEBUG
+      Fighter f = new Fighter(100, 100, getNextShipID() + level);
+      //actP.makeCenter(f);
+      astros.add(f);
       astros.add(new Fighter(-100, -100, getNextShipID() + level));
       astros.add(new Fighter(-200, 200, getNextShipID() + level * 2));
   }
