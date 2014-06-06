@@ -19,8 +19,6 @@ import java.awt.image.BufferedImage;
 import java.awt.geom.AffineTransform;
 
 /**
-    Where Objects in Space begins.
-
     Contains the frame, all panels, and all non-SpaceObj classes.
 */
 public class Game {
@@ -302,8 +300,8 @@ public class Game {
     */
     public Weapon getWeapon(Ship s) {
         switch(s.selectedWeapon) {
-            //case Weapon.SW:
-            //    return new SomeWeapon(...);
+            //case Weapon.LB:
+            //    return new LaserBullet(...);
             //    break;
             default:
                 return new LaserBullet(s.x, s.y, s.dx, s.dy, s.maxVelocity, s.accelRate, s.angle, s.shipID);
