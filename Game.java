@@ -207,8 +207,8 @@ public class Game {
                 updatePositions();
                 checkCollisions();
                 kill();
+                actP.repaint();
                 if(paintTime >= 16) {
-                    actP.repaint();
                     paintTime = 0;
                     if(enemiesRemain() == false)
                         ++endLevelPauseCount;
