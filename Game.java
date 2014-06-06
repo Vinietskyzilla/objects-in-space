@@ -11,6 +11,7 @@
 import java.awt.*;
 import javax.swing.*;
 import java.util.*;
+import java.util.List;
 import java.awt.event.*;
 import java.io.*;
 import javax.imageio.ImageIO;
@@ -72,11 +73,11 @@ public class Game {
   /**
     Contains all ships.
   */
-  java.util.List<Ship> ships = Collections.synchronizedList(new LinkedList<Ship>());
+  List<Ship> ships = Collections.synchronizedList(new LinkedList<Ship>());
   /**
     Contains all projectiles.
   */
-  java.util.List<Weapon> projectiles = Collections.synchronizedList(new LinkedList<Weapon>());
+  List<Weapon> projectiles = Collections.synchronizedList(new LinkedList<Weapon>());
   /**
     Contains positions, diameters, and colors of non-interactive background stars.
   */
@@ -257,12 +258,9 @@ public class Game {
 
   */
   private void spawnShips() {
-      // DEBUG
-      Fighter f = new Fighter(100, 100, getNextShipID() + level);
-      //actP.makeCenter(f);
-      ships.add(f);
-      ships.add(new Fighter(-100, -100, getNextShipID() + level));
-      ships.add(new Fighter(-200, 200, getNextShipID() + level * 2));
+    ships.add(new Fighter(100, 100, getNextShipID() + level));
+    ships.add(new Fighter(-100, -100, getNextShipID() + level));
+    ships.add(new Fighter(-200, 200, getNextShipID() + level * 2));
   }
   /**
 
@@ -291,7 +289,6 @@ public class Game {
       }
       w = getWeapon(hero);
       if(hero.firing == 1) {
-        // fire!
         projectiles.add(w);
       }
       if(hero.firing > 0)
@@ -332,7 +329,6 @@ public class Game {
 
   */
   private void updatePositions() {
-    // the order of the following may need to change depending on when updatePositions is called
 
     ///////////////////////
     // modify rotation
@@ -385,16 +381,18 @@ public class Game {
     // move everything based on movement of centerSpaceObj
     for(int i = 0; i < shipsSize; i++) {
       Ship s = ships.get(i);
-      s.x -= centerSpaceObj.dx;
-      s.y -= centerSpaceObj.dy;
-      if(s.x < -thisSystemWidth/2)
-        s.x += thisSystemWidth;
-      else if(s.x > thisSystemWidth/2)
-        s.x -= thisSystemWidth;
-      if(s.y < -thisSystemHeight/2)
-        s.y += thisSystemHeight;
-      else if(s.y > thisSystemHeight/2)
-        s.y -= thisSystemHeight;
+      if (s != centerSpaceObj) {
+        s.x -= centerSpaceObj.dx;
+        s.y -= centerSpaceObj.dy;
+        if(s.x < -thisSystemWidth/2)
+          s.x += thisSystemWidth;
+        else if(s.x > thisSystemWidth/2)
+          s.x -= thisSystemWidth;
+        if(s.y < -thisSystemHeight/2)
+          s.y += thisSystemHeight;
+        else if(s.y > thisSystemHeight/2)
+          s.y -= thisSystemHeight;
+      }
     }
     for(int i = 0; i < projectilesSize; i++) {
       Weapon w = projectiles.get(i);
@@ -408,6 +406,18 @@ public class Game {
         w.y += thisSystemHeight;
       else if(w.y > thisSystemHeight/2)
         w.y -= thisSystemHeight;
+    }
+    if (hero != centerSpaceObj) {
+      hero.x -= centerSpaceObj.dx;
+      hero.y -= centerSpaceObj.dy;
+      if(hero.x < -thisSystemWidth/2)
+        hero.x += thisSystemWidth;
+      else if(hero.x > thisSystemWidth/2)
+        hero.x -= thisSystemWidth;
+      if(hero.y < -thisSystemHeight/2)
+        hero.y += thisSystemHeight;
+      else if(hero.y > thisSystemHeight/2)
+        hero.y -= thisSystemHeight;
     }
     
     centerSpaceObj.x -= centerSpaceObj.dx;
@@ -451,11 +461,6 @@ public class Game {
       ++s.isAccel;
     if(s.isAccel > 4)
       s.isAccel = 1;
-  }
-  /**
-
-  */
-  public void intervalMove(SpaceObj s) {
   }
   /**
 
@@ -530,6 +535,46 @@ public class Game {
   /**
 
   */
+  public void makeCenter(SpaceObj s) {
+    centerSpaceObj = s;
+
+    double x = s.x, y = s.y;
+
+    int shipsSize = ships.size();
+    synchronized (ships) {
+      for (int i = 0; i < ships.size(); i++) {
+        translateWithCenter(ships.get(i), x, y);
+      }
+    }
+    int projectilesSize = projectiles.size();
+    synchronized (projectiles) {
+      for (int i = 0; i < projectiles.size(); i++) {
+        translateWithCenter(projectiles.get(i), x, y);
+      }
+    }
+    translateWithCenter(hero, x, y);
+    // Should also translate dust and stars for a better effect.
+    // (Make it really feel like we are looking at a different
+    // part of space.)
+  }
+  /**
+
+  */
+  public void translateWithCenter(SpaceObj s, double x, double y) {
+    s.x -= x;
+    s.y -= y;
+    if(s.x < -thisSystemWidth/2)
+      s.x += thisSystemWidth;
+    else if(s.x > thisSystemWidth/2)
+      s.x -= thisSystemWidth;
+    if(s.y < -thisSystemHeight/2)
+      s.y += thisSystemHeight;
+    else if(s.y > thisSystemHeight/2)
+      s.y -= thisSystemHeight;
+  }
+  /**
+
+  */
   public class UpdatePanel extends JPanel {
     /**
 
@@ -566,15 +611,6 @@ public class Game {
       myKeyListener mkl = new myKeyListener();
       this.addKeyListener(mkl);
       this.setFocusable(true);
-    }
-    /**
-
-    */
-    public void makeCenter(SpaceObj s) {
-      if(centerSpaceObj != null)
-        centerSpaceObj.isGameCenter = false;
-      centerSpaceObj = s;
-      s.isGameCenter = true;
     }
     /**
 
@@ -632,8 +668,8 @@ public class Game {
       origXform = g2d.getTransform();
       newXform = (AffineTransform)(origXform.clone());
       //center of rotation is center of the panel
-      xRot = panelWidth/2;
-      yRot = panelHeight/2;
+      xRot = ((int) hero.x) + panelWidth/2;
+      yRot = -((int) hero.y) + panelHeight/2;
       newXform.rotate(-hero.angle, xRot, yRot);
       g2d.setTransform(newXform);
       //draw image centered in panel
@@ -667,11 +703,11 @@ public class Game {
           g2d.setColor(Color.red);
           // else
           // g2d.setColor(Color.green);
-          g2d.fillOval(((int) (ships.get(i).x * (double) mapWidth / (double) thisSystemWidth) + (mapWidth / 2) + panelWidth + mapBorder + 4), -((int) (ships.get(i).y * (double) mapWidth / (double) thisSystemHeight)) + (mapWidth / 2) + mapBorder, 3, 3);
+          g2d.fillOval(((int) (ships.get(i).x * (double) mapWidth / (double) thisSystemWidth) + (mapWidth / 2) + panelWidth + mapBorder + 4) - 1, -((int) (ships.get(i).y * (double) mapWidth / (double) thisSystemHeight)) + (mapWidth / 2) + mapBorder - 1, 3, 3);
         }
       }
       g2d.setColor(Color.blue);
-      g2d.fillOval((int) (hero.x * (double) mapWidth / (double) thisSystemWidth) + (mapWidth / 2) + panelWidth + mapBorder + 4, -((int) (hero.y * (double) mapWidth / (double) thisSystemHeight)) + (mapWidth / 2) + mapBorder, 3, 3);
+      g2d.fillOval((int) (hero.x * (double) mapWidth / (double) thisSystemWidth) + (mapWidth / 2) + panelWidth + mapBorder + 4 - 1, -((int) (hero.y * (double) mapWidth / (double) thisSystemHeight)) + (mapWidth / 2) + mapBorder - 1, 3, 3);
       // paint rectangle around visible field on minimap
       g2d.setColor(new Color(0xFF00C000));
       g2d.drawRect((int) ((-panelWidth / 2) * (double) mapWidth / (double) thisSystemWidth) + (mapWidth / 2) + panelWidth + mapBorder + 4,
@@ -701,16 +737,22 @@ public class Game {
         if(keyCode == KeyEvent.VK_UP)
           if(hero.isAccel == 0)
             hero.isAccel = 1;
-        // if(e.getKeyCode() == KeyEvent.VK_DOWN)
 
         if(keyCode == KeyEvent.VK_SPACE) {
           if(hero.firing == 0)
             hero.firing = 1;
         }
-        if(e.getKeyCode() == KeyEvent.VK_ESCAPE)
+        // DEBUG
+        if(keyCode == KeyEvent.VK_M)
+          if(centerSpaceObj instanceof PlayerShip)
+            makeCenter(ships.get(0));
+          else
+            makeCenter(hero);
+
+        if(keyCode == KeyEvent.VK_ESCAPE)
           System.exit(0);
+
         e.consume();
-        //update();
       }
       /**
 
@@ -744,36 +786,7 @@ public class Game {
           hero.firing = 0;
         }
         e.consume();
-        //update();
       }
-    }
-    /**
-
-    */
-    public void update() {
-      StringBuilder str = new StringBuilder();
-
-      if (hero.isAccel > 0) {
-        str.append(" [up]");
-      }
-
-      // if (down) {
-      // if (ctrldown) {
-      // str.append(" [ctrl-down]");
-      // } else {
-      // str.append(" [down]");
-      // }
-      // }
-
-      if (hero.turningLeft) {
-        str.append(" [left]");
-      }
-
-      if (hero.turningRight) {
-        str.append(" [right]");
-      }
-
-      System.out.println(str.toString());
     }
   }
 }

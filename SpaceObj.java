@@ -32,7 +32,6 @@ public abstract class SpaceObj {
   /**
 
   */
-  public boolean isGameCenter;
   //public Position gamePos;
   /**
 
