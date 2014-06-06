@@ -1,4 +1,11 @@
+Compile class files:
 javac *.java
+
+Play the game:
 java Game
+
+Create a jar file:
 jar -cvmf manifest.txt "Objects in Space.jar" *.class *.png
+
+Play the game:
 java -jar "Objects in Space.jar"
