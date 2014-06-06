@@ -60,6 +60,10 @@ public abstract class SpaceObj {
     /**
 
     */
+    public boolean isBoosting;
+    /**
+
+    */
     public boolean turningLeft;
     /**
 
@@ -99,6 +103,7 @@ public abstract class SpaceObj {
     */
     public SpaceObj(double mv) {
         maxVelocity = mv;
+        isBoosting = false;
         alive = true;
         countDown = 0;
     }
@@ -125,13 +130,24 @@ public abstract class SpaceObj {
         double slowAccel = 1;
         if(currentVelocity < accelRate)
             slowAccel = .2;
-        double dx2 = dx + (Math.cos(angle)*accelRate*slowAccel);
-        double dy2 = dy + (Math.sin(angle)*accelRate*slowAccel);
-        if(dx2 <= maxVelocity && dx2 >= -maxVelocity)
-            dx = dx2;
-        if(dy2 <= maxVelocity && dy2 >= -maxVelocity)
-            dy = dy2;
-
+        double dx2, dy2;
+        if (isBoosting) {
+            dx2 = dx + 2*(Math.cos(angle)*accelRate*slowAccel);
+            dy2 = dy + 2*(Math.sin(angle)*accelRate*slowAccel);
+            if(dx2 <= 2*maxVelocity && dx2 >= -2*maxVelocity)
+                dx = dx2;
+            if(dy2 <= 2*maxVelocity && dy2 >= -2*maxVelocity)
+                dy = dy2;
+        } else {
+            dx2 = Math.cos(angle)*accelRate*slowAccel;
+            dy2 = Math.sin(angle)*accelRate*slowAccel;
+            if((dx + dx2 <= maxVelocity && dx + dx2 >= -maxVelocity) ||
+                (dx2 < 0 && dx > 0) || (dx2 > 0 && dx < 0))
+                dx = dx + dx2;
+            if((dy + dy2 <= maxVelocity && dy + dy2 >= -maxVelocity) || 
+                (dy2 < 0 && dy > 0) || (dy2 > 0 && dy < 0))
+                dy = dy + dy2;
+        }
 
         // double currentVelocity = Math.sqrt(dx*dx + dy*dy);
         // double newVelocity = Math.sqrt(dx2*dx2 + dy2*dy2);

@@ -375,6 +375,18 @@ public class Game {
             w.y += w.dy;
         }
         intervalAccel(hero);
+        // Bring speed back down from boosting. (Don't
+        // give extra speed for free.)
+        if (!hero.isBoosting) {
+            if (hero.dx > hero.maxVelocity)
+              --hero.dx;
+            else if (hero.dx < -hero.maxVelocity)
+              ++hero.dx;
+            if (hero.dx > hero.maxVelocity)
+              --hero.dx;
+            else if (hero.dx < -hero.maxVelocity)
+              ++hero.dx;
+        }
         hero.x += hero.dx;
         hero.y += hero.dy;
 
@@ -737,6 +749,11 @@ public class Game {
                 if(keyCode == KeyEvent.VK_UP)
                     if(hero.isAccel == 0)
                         hero.isAccel = 1;
+                if (keyCode == KeyEvent.VK_Z) {
+                    if(hero.isAccel == 0)
+                        hero.isAccel = 1;
+                    hero.isBoosting = true;
+                }
 
                 if(keyCode == KeyEvent.VK_SPACE) {
                     if(hero.firing == 0)
@@ -774,6 +791,10 @@ public class Game {
                 int keyCode = e.getKeyCode();
                 if (keyCode == KeyEvent.VK_UP) {
                     hero.isAccel = 0;
+                }
+                else if (keyCode == KeyEvent.VK_Z) {
+                    hero.isAccel = 0;
+                    hero.isBoosting = false;
                 }
                 // else if (keyCode == KeyEvent.VK_DOWN)
                 else if (keyCode == KeyEvent.VK_LEFT) {
