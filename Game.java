@@ -194,7 +194,7 @@ public class Game {
             frame.getContentPane().add(actP);
             frame.getContentPane().validate();
             frame.getContentPane().repaint();
-            actP.requestFocus();
+            actP.requestFocusInWindow();
             boolean levelComplete = false;
             int endLevelPauseCount = 0;
             double countTo = 300;
@@ -592,14 +592,13 @@ public class Game {
         public UpdatePanel() {
             this.setMinimumSize(new Dimension(panelWidth, panelHeight));
             JButton buttonStartLevel = new JButton("Start next level");
-            startLevelListener sll = new startLevelListener();
-            buttonStartLevel.addActionListener(sll);
+            buttonStartLevel.addActionListener(new StartLevelListener());
             this.add(buttonStartLevel);
         }
         /**
 
         */
-        protected class startLevelListener implements ActionListener {
+        protected class StartLevelListener implements ActionListener {
             public void actionPerformed(ActionEvent e) {
                 frame.getContentPane().remove(up);
                 frame.repaint();
