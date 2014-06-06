@@ -5,42 +5,42 @@ import java.awt.image.BufferedImage;
 
 */
 public class PlayerShip extends Ship {
-  /**
+    /**
 
-  */
-  int structIntegInit;
-  /**
+    */
+    int structIntegInit;
+    /**
 
-  */
-  protected PlayerShip() {}
-  /**
+    */
+    protected PlayerShip() {}
+    /**
 
-  */
-  public PlayerShip(int X, int Y, int sID) {
-    // pass maxVelocity to SpaceObj
-    super(5);
+    */
+    public PlayerShip(int X, int Y, int sID) {
+        // pass maxVelocity to SpaceObj
+        super(5);
 
-    name = "PlayerShip";
-    shipID = sID;
+        name = "PlayerShip";
+        shipID = sID;
 
-    weapons.add(Weapon.LB);
-    structIntegInit = 150;
-    structInteg = structIntegInit;
+        weapons.add(Weapon.LB);
+        structIntegInit = 150;
+        structInteg = structIntegInit;
 
-    angle = .5*Math.PI;
-    x = X;
-    y = Y;
-    dx = 0;
-    dy = 0;  // y increases UPWARD
-    accelRate = .2;
-    turnRate = Math.PI / 160;
+        angle = .5*Math.PI;
+        x = X;
+        y = Y;
+        dx = 0;
+        dy = 0; // y increases UPWARD
+        accelRate = .2;
+        turnRate = Math.PI / 160;
 
-    origObjImg = null;
-    try {
-      origObjImg = ImageIO.read(getClass().getResource("playership.png"));
-    } catch (IOException e) {
-      e.printStackTrace();
+        origObjImg = null;
+        try {
+            origObjImg = ImageIO.read(getClass().getResource("playership.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        diam = origObjImg.getWidth();
     }
-    diam = origObjImg.getWidth();
-  }
 }
