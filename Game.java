@@ -183,14 +183,8 @@ public class Game {
             ships.clear();
             projectiles.clear();
             spawnShips();
-            hero.turningRight = false;
-            hero.turningLeft = false;
-            hero.isAccel = 0;
-            hero.dx = 0;
-            hero.dy = 0;
-            hero.angle = .5*Math.PI;
-            hero.firing = 0;
-            hero.structInteg = hero.structIntegInit;
+            hero = new PlayerShip(0, 0, 1);
+            makeCenter(hero);
             frame.getContentPane().add(actP);
             frame.getContentPane().validate();
             frame.getContentPane().repaint();
@@ -210,7 +204,7 @@ public class Game {
                 actP.repaint();
                 if(paintTime >= 16) {
                     paintTime = 0;
-                    if(enemiesRemain() == false)
+                    if(enemiesRemain() == false || !hero.alive)
                         ++endLevelPauseCount;
                 }
                 try {
@@ -504,22 +498,25 @@ public class Game {
             }
         }
         s = hero;
-        for(int j = 0; j < projectiles.size(); j++) {
-            w = projectiles.get(j);
-            if(w.friendlyFire || (w.shipID != s.shipID)) {
-                hit = s.y - s.diam / 2 <= w.y &&
-                    s.y + s.diam / 2 >= w.y &&
-                    s.x + s.diam / 2 >= w.x &&
-                    s.x - s.diam / 2 <= w.x;
-                if(hit) {
-                    s.structInteg -= w.damage;
-                    if(s.structInteg <= 0) {
-                        s.countDown = 170;
-                        s.alive = false;
-                        s.die();
+        if (hero.alive) {
+            for(int j = 0; j < projectiles.size(); j++) {
+                w = projectiles.get(j);
+                if(w.friendlyFire || (w.shipID != s.shipID)) {
+                    hit = s.y - s.diam / 2 <= w.y &&
+                        s.y + s.diam / 2 >= w.y &&
+                        s.x + s.diam / 2 >= w.x &&
+                        s.x - s.diam / 2 <= w.x;
+                    if(hit) {
+                        s.structInteg -= w.damage;
+                        if(s.structInteg <= 0) {
+                            s.countDown = 170;
+                            s.alive = false;
+                            s.die();
+                            ships.add(hero);
+                        }
+                        projectiles.remove(w);
+                        --j;
                     }
-                    projectiles.remove(w);
-                    --j;
                 }
             }
         }
@@ -615,8 +612,6 @@ public class Game {
         */
         public ActionPanel() {
             level = 1;
-            hero = new PlayerShip(0, 0, 1);
-            makeCenter(hero);
             myKeyListener mkl = new myKeyListener();
             this.addKeyListener(mkl);
             this.setFocusable(true);
@@ -674,18 +669,20 @@ public class Game {
                 }
             }
 
-            origXform = g2d.getTransform();
-            newXform = (AffineTransform)(origXform.clone());
-            //center of rotation is center of the panel
-            xRot = ((int) hero.x) + panelWidth/2;
-            yRot = -((int) hero.y) + panelHeight/2;
-            newXform.rotate(-hero.angle, xRot, yRot);
-            g2d.setTransform(newXform);
-            //draw image centered in panel
-            frameX = ((int) hero.x) + panelWidth / 2 - hero.getImage().getWidth(this)/2;
-            frameY = -((int) hero.y) + panelHeight / 2 - hero.getImage().getHeight(this)/2;
-            g2d.drawImage(hero.getImage(), frameX, frameY, this);
-            g2d.setTransform(origXform);
+            if (hero.countDown != 1) {
+                origXform = g2d.getTransform();
+                newXform = (AffineTransform)(origXform.clone());
+                //center of rotation is center of the panel
+                xRot = ((int) hero.x) + panelWidth/2;
+                yRot = -((int) hero.y) + panelHeight/2;
+                newXform.rotate(-hero.angle, xRot, yRot);
+                g2d.setTransform(newXform);
+                //draw image centered in panel
+                frameX = ((int) hero.x) + panelWidth / 2 - hero.getImage().getWidth(this)/2;
+                frameY = -((int) hero.y) + panelHeight / 2 - hero.getImage().getHeight(this)/2;
+                g2d.drawImage(hero.getImage(), frameX, frameY, this);
+                g2d.setTransform(origXform);
+            }
 
             /////////////////////////
             // PAINT SIDEBAR
@@ -739,30 +736,31 @@ public class Game {
         public class myKeyListener extends KeyAdapter {
             public void keyPressed(KeyEvent e) {
                 int keyCode = e.getKeyCode();
-                if(keyCode == KeyEvent.VK_LEFT)
-                    hero.turningLeft = true;
-                if(keyCode == KeyEvent.VK_RIGHT)
-                    hero.turningRight = true;
-                if(keyCode == KeyEvent.VK_UP)
-                    if(hero.isAccel == 0)
-                        hero.isAccel = 1;
-                if (keyCode == KeyEvent.VK_Z) {
-                    if(hero.isAccel == 0)
-                        hero.isAccel = 1;
-                    hero.isBoosting = true;
-                }
+                if (hero.alive) {
+                    if(keyCode == KeyEvent.VK_LEFT)
+                        hero.turningLeft = true;
+                    if(keyCode == KeyEvent.VK_RIGHT)
+                        hero.turningRight = true;
+                    if(keyCode == KeyEvent.VK_UP)
+                        if(hero.isAccel == 0)
+                            hero.isAccel = 1;
+                    if (keyCode == KeyEvent.VK_Z) {
+                        if(hero.isAccel == 0)
+                            hero.isAccel = 1;
+                        hero.isBoosting = true;
+                    }
 
-                if(keyCode == KeyEvent.VK_SPACE) {
-                    if(hero.firing == 0)
-                        hero.firing = 1;
+                    if(keyCode == KeyEvent.VK_SPACE) {
+                        if(hero.firing == 0)
+                            hero.firing = 1;
+                    }
+                    // DEBUG
+                    if(keyCode == KeyEvent.VK_M)
+                        if(centerSpaceObj instanceof PlayerShip)
+                            makeCenter(ships.get(0));
+                        else
+                            makeCenter(hero);
                 }
-                // DEBUG
-                if(keyCode == KeyEvent.VK_M)
-                    if(centerSpaceObj instanceof PlayerShip)
-                        makeCenter(ships.get(0));
-                    else
-                        makeCenter(hero);
-
                 if(keyCode == KeyEvent.VK_ESCAPE)
                     System.exit(0);
 
@@ -786,22 +784,24 @@ public class Game {
             */
             public void keyReleased(KeyEvent e) {
                 int keyCode = e.getKeyCode();
-                if (keyCode == KeyEvent.VK_UP) {
-                    hero.isAccel = 0;
-                }
-                else if (keyCode == KeyEvent.VK_Z) {
-                    hero.isAccel = 0;
-                    hero.isBoosting = false;
-                }
-                // else if (keyCode == KeyEvent.VK_DOWN)
-                else if (keyCode == KeyEvent.VK_LEFT) {
-                    hero.turningLeft = false;
-                }
-                else if (keyCode == KeyEvent.VK_RIGHT) {
-                    hero.turningRight = false;
-                }
-                else if(keyCode == KeyEvent.VK_SPACE) {
-                    hero.firing = 0;
+                if (hero.alive) {
+                    if (keyCode == KeyEvent.VK_UP) {
+                        hero.isAccel = 0;
+                    }
+                    else if (keyCode == KeyEvent.VK_Z) {
+                        hero.isAccel = 0;
+                        hero.isBoosting = false;
+                    }
+                    // else if (keyCode == KeyEvent.VK_DOWN)
+                    else if (keyCode == KeyEvent.VK_LEFT) {
+                        hero.turningLeft = false;
+                    }
+                    else if (keyCode == KeyEvent.VK_RIGHT) {
+                        hero.turningRight = false;
+                    }
+                    else if(keyCode == KeyEvent.VK_SPACE) {
+                        hero.firing = 0;
+                    }
                 }
                 e.consume();
             }
