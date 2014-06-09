@@ -71,11 +71,11 @@ public class Game {
     /**
         Contains all ships.
     */
-    List<Ship> ships = Collections.synchronizedList(new LinkedList<Ship>());
+    List<Ship> ships = new LinkedList<Ship>();
     /**
         Contains all projectiles.
     */
-    List<Weapon> projectiles = Collections.synchronizedList(new LinkedList<Weapon>());
+    List<Weapon> projectiles = new LinkedList<Weapon>();
     /**
         Contains positions, diameters, and colors of non-interactive background stars.
     */
