@@ -111,6 +111,8 @@ public class Game {
 
         // Passes control back to up, the UpdatePanel, when the level is complete by calling actP.nextPanel() (ActionPanel.nextPanel()).
         public void run() {
+            paintLS = new LiveSystem(level);
+            physicsLS = new LiveSystem(paintLS);
             frame.getContentPane().add(actP);
             frame.getContentPane().validate();
             frame.getContentPane().repaint();
@@ -120,9 +122,6 @@ public class Game {
             double countTo = 300;
             long loopTime = new Date().getTime();
             long paintTime = 16;
-            paintLS = new LiveSystem(level);
-            actP.repaint();
-            physicsLS = new LiveSystem(paintLS);
             while(levelComplete == false) {
                 long msStart = new Date().getTime();
                 
