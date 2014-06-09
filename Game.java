@@ -4,10 +4,7 @@
 //    By David Winiecki
 //      January 2011
 //
-/**
-    @version Objects in Space
-    @author David Winiecki
-*/
+
 import java.awt.*;
 import javax.swing.*;
 import java.util.*;
@@ -18,93 +15,51 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.awt.geom.AffineTransform;
 
-/**
-    Contains the frame, all panels, and all non-SpaceObj classes.
-*/
+// Contains the frame, all panels, and all non-SpaceObj classes.
 public class Game {
-    /**
-        Window frame.
-    */
+    // Window frame.
     JFrame frame;
-    /**
-        Desired width for the square in which you fly.
-    */
+    // Desired width for the square in which you fly.
     int panelWidth; // desired width for the square in which you fly
-    /**
-        Desired height for the square in which you fly.
-    */
+    // Desired height for the square in which you fly.
     int panelHeight; // desired height for the square in which you fly
-    /**
-        Width of the side menu during game play.
-    */
+    // Width of the side menu during game play.
     int sideMenuWidth;
-    /**
-        Width of the current system. Objects that exceed the system bounds are moved to the opposite side of the system. (The system is a torus.)
-    */
+    // Width of the current system. Objects that exceed the system bounds are moved to the opposite side of the system. (The system is a torus.)
     int thisSystemWidth;
-    /**
-        Height of the current system. Objects that exceed the system bounds are moved to the opposite side of the system. (The system is a torus.)
-    */
+    // Height of the current system. Objects that exceed the system bounds are moved to the opposite side of the system. (The system is a torus.)
     int thisSystemHeight;
     // map dimension stuff
-    /**
-        Distance between the minimap and the sides of the frame
-    */
+    // Distance between the minimap and the sides of the frame
     int mapBorder;
-    /**
-        Width of the minimap. Also used for height of the minimap.
-    */
+    // Width of the minimap. Also used for height of the minimap.
     int mapWidth;
     // panels, lists, etc.
-    /**
-        Holds a start next level button. Will someday contain upgrades for the player's ship.
-    */
+    // Holds a start next level button. Will someday contain upgrades for the player's ship.
     UpdatePanel up;
-    /**
-        The panel on which the game is played.
-    */
+    // The panel on which the game is played.
     ActionPanel actP;
-    /**
-        Player's ship.
-    */
+    // Player's ship.
     PlayerShip hero;
-    /**
-        Contains all ships.
-    */
-    List<Ship> ships = new LinkedList<Ship>();
-    /**
-        Contains all projectiles.
-    */
-    List<Weapon> projectiles = new LinkedList<Weapon>();
-    /**
-        Contains positions, diameters, and colors of non-interactive background stars.
-    */
+    // Contains all ships.
+    List<Ship> ships = Collections.synchronizedList(new LinkedList<Ship>());
+    // Contains all projectiles.
+    List<Weapon> projectiles = Collections.synchronizedList(new LinkedList<Weapon>());
+    // Contains positions, diameters, and colors of non-interactive background stars.
     ArrayList<Star> stars = new ArrayList<Star>();
-    /**
-        Contains positions, diameters, and color of non-interactive foreground dust.
-    */
+    // Contains positions, diameters, and color of non-interactive foreground dust.
     ArrayList<Dust> dust = new ArrayList<Dust>();
-    /**
-        Tracks the current level of the game.
-    */
+    // Tracks the current level of the game.
     int level;
-    /**
-        Used by the collision checker to prevent ships from shooting themselves.
-    */
+    // Used by the collision checker to prevent ships from shooting themselves.
     int shipID = 2;
-    /**
-        A reference to the SpaceObj on which to center the window when playing the game.
-    */
+    // A reference to the SpaceObj on which to center the window when playing the game.
     SpaceObj centerSpaceObj;
-    /**
-        Creates and starts a new game.
-    */
+    // Creates and starts a new game.
     public static void main(String[] args) {
         new Game();
     }
-    /**
-        Initializes frame and panel dimensions and starts the game by running the UpdatePanel up.
-    */
+    // Initializes frame and panel dimensions and starts the game by running the UpdatePanel up.
     public Game() {
         int horizantalWindowBorderOffset = 6;
         int headerWindowBorderOffset = 28;
@@ -163,15 +118,11 @@ public class Game {
         frame.getContentPane().add(up);
         frame.setVisible(true);
     }
-    /**
-        Contains the run method that executes the game. Created in a new thread by up's button listener.
-    */
+    // Contains the run method that executes the game. Created in a new thread by up's button listener.
     public class Play implements Runnable {
-        /**
-            Initializes state for the next level, displays actP, the ActionPanel on which the game is played, and then cycles through a game loop that updates positions, checks collisions, repaints, etc.
+        // Initializes state for the next level, displays actP, the ActionPanel on which the game is played, and then cycles through a game loop that updates positions, checks collisions, repaints, etc.
 
-            Passes control back to up, the UpdatePanel, when the level is complete by calling actP.nextPanel() (ActionPanel.nextPanel()).
-        */
+        // Passes control back to up, the UpdatePanel, when the level is complete by calling actP.nextPanel() (ActionPanel.nextPanel()).
         public void run() {
             shipID = 2;
             thisSystemWidth = 10000;
@@ -224,45 +175,32 @@ public class Game {
             actP.nextPanel();
         }
     }
-    /**
-    
-    */
     public boolean enemiesRemain() {
         return ships.size() > 0 ? true : false;
     }
-    /**
 
-    */
     public void populateStars(ArrayList<Star> s) {
         for(int i = 0; i < 200; i++) {
             s.add(new Star(4000, 4000));
         }
     }
-    /**
 
-    */
     public void populateDust(ArrayList<Dust> s) {
         for(int i = 0; i < 150; i++) {
             s.add(new Dust(4000, 4000));
         }
     }
-    /**
 
-    */
     private void spawnShips() {
         ships.add(new Fighter(100, 100, getNextShipID() + level));
         ships.add(new Fighter(-100, -100, getNextShipID() + level));
         ships.add(new Fighter(-200, 200, getNextShipID() + level * 2));
     }
-    /**
 
-    */
     public int getNextShipID() {
         return shipID++;
     }
-    /**
 
-    */
     public void fireWeapons() {
         Weapon w;
         int shipsSize = ships.size();
@@ -289,9 +227,7 @@ public class Game {
                 hero.firing = 1;
         }
     }
-    /**
 
-    */
     public Weapon getWeapon(Ship s) {
         switch(s.selectedWeapon) {
             //case Weapon.LB:
@@ -301,9 +237,7 @@ public class Game {
                 return new LaserBullet(s.x, s.y, s.dx, s.dy, s.maxVelocity, s.accelRate, s.angle, s.shipID);
         }
     }
-    /**
 
-    */
     private void expireProjectiles() {
         int projectilesSize = projectiles.size();
         synchronized (projectiles) {
@@ -317,9 +251,7 @@ public class Game {
             }
         }
     }
-    /**
 
-    */
     private void updatePositions() {
 
         ///////////////////////
@@ -455,9 +387,7 @@ public class Game {
                 s.y -= 4000;
         }
     }
-    /**
 
-    */
     public void intervalAccel(SpaceObj s) {
         if(s.isAccel == 1)
             s.accelerate();
@@ -466,9 +396,7 @@ public class Game {
         if(s.isAccel > 4)
             s.isAccel = 1;
     }
-    /**
 
-    */
     public void checkCollisions() {
         Weapon w;
         Ship s;
@@ -521,9 +449,7 @@ public class Game {
             }
         }
     }
-    /**
 
-    */
     public void kill() {
         Ship s;
         synchronized (ships) {
@@ -539,9 +465,7 @@ public class Game {
             }
         }
     }
-    /**
 
-    */
     public void makeCenter(SpaceObj s) {
         centerSpaceObj = s;
 
@@ -564,9 +488,7 @@ public class Game {
         // (Make it really feel like we are looking at a different
         // part of space.)
     }
-    /**
 
-    */
     public void translateWithCenter(SpaceObj s, double x, double y) {
         s.x -= x;
         s.y -= y;
@@ -579,22 +501,16 @@ public class Game {
         else if(s.y > thisSystemHeight/2)
             s.y -= thisSystemHeight;
     }
-    /**
 
-    */
     public class UpdatePanel extends JPanel {
-        /**
 
-        */
         public UpdatePanel() {
             this.setMinimumSize(new Dimension(panelWidth, panelHeight));
             JButton buttonStartLevel = new JButton("Start next level");
             buttonStartLevel.addActionListener(new StartLevelListener());
             this.add(buttonStartLevel);
         }
-        /**
 
-        */
         protected class StartLevelListener implements ActionListener {
             public void actionPerformed(ActionEvent e) {
                 frame.getContentPane().remove(up);
@@ -603,22 +519,16 @@ public class Game {
             }
         }
     }
-    /**
 
-    */
     public class ActionPanel extends JPanel {
-        /**
 
-        */
         public ActionPanel() {
             level = 1;
             myKeyListener mkl = new myKeyListener();
             this.addKeyListener(mkl);
             this.setFocusable(true);
         }
-        /**
 
-        */
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
             Graphics2D g2d = (Graphics2D) g;
@@ -721,18 +631,14 @@ public class Game {
                 (int) (panelWidth * (double) mapWidth / (double) thisSystemWidth),
                 (int) (panelHeight * (double) mapWidth / (double) thisSystemHeight));
         }
-        /**
 
-        */
         public void nextPanel() {
             frame.getContentPane().remove(this);
             frame.getContentPane().add(BorderLayout.CENTER, up);
             frame.getContentPane().validate();
             frame.getContentPane().repaint();
         }
-        /**
 
-        */
         public class myKeyListener extends KeyAdapter {
             public void keyPressed(KeyEvent e) {
                 int keyCode = e.getKeyCode();
@@ -766,9 +672,7 @@ public class Game {
 
                 e.consume();
             }
-            /**
 
-            */
             public void keyTyped(KeyEvent e) {
                 // if(e. == 'a') {
                 // }
@@ -779,9 +683,7 @@ public class Game {
                 // else if(e. == 'f') {
                 // }
             }
-            /**
 
-            */
             public void keyReleased(KeyEvent e) {
                 int keyCode = e.getKeyCode();
                 if (hero.alive) {

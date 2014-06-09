@@ -1,23 +1,8 @@
 import java.awt.Color;
-/**
-
-*/
 public class Star extends SpaceObj {
-    /**
-
-    */
     public int diam;
-    /**
-
-    */
     public Color color;
-    /**
-
-    */
     protected Star() {}
-    /**
-
-    */
     public Star(int width, int height) {
         // maxVelocity == 0
         super(0);

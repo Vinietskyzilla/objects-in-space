@@ -2,17 +2,8 @@ import java.io.*;
 import javax.imageio.ImageIO;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
-/**
-
-*/
 public class Fighter extends Ship {
-    /**
-
-    */
     protected Fighter() {}
-    /**
-
-    */
     public Fighter(int X, int Y, int sID) {
         // pass maxVelocity to SpaceObj
         super(sID / 3);

@@ -1,10 +1,4 @@
-/**
-
-*/
 public class LaserBullet extends Weapon {
-    /**
-
-    */
     public LaserBullet(double X, double Y, double userdx, double userdy, double userMaxVelocity, double userAccelRate, double ang, int userShipID) {
         super(10*userMaxVelocity);
         name = "LaserBullet";

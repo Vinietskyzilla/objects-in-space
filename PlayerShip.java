@@ -1,21 +1,9 @@
 import java.io.*;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-/**
-
-*/
 public class PlayerShip extends Ship {
-    /**
-
-    */
     int structIntegInit;
-    /**
-
-    */
     protected PlayerShip() {}
-    /**
-
-    */
     public PlayerShip(int X, int Y, int sID) {
         // pass maxVelocity to SpaceObj
         super(5);

@@ -5,123 +5,42 @@ import java.util.*;
 import java.awt.event.*;
 import javax.imageio.ImageIO;
 import java.io.*;
-/**
-
-*/
 public abstract class SpaceObj {
-    /**
-
-    */
     public boolean alive;
-    /**
-
-    */
     public int shipID;
-    /**
-
-    */
     public double angle; // current angle in radians (East is 0 or 2*PI)
-    /**
-
-    */
     public double x;
-    /**
-
-    */
     public double y;
-    /**
-
-    */
     //public Position gamePos;
-    /**
-
-    */
     protected double dx; // This variable is protected because we need to check if the new assigned velocity is greater than maxVelocity
-    /**
-
-    */
     protected double dy;
-    /**
-
-    */
     public double maxVelocity; // absolute maximum velocity
-    /**
-
-    */
     public double accelRate; // rate of acceleration; dv/dt
-    /**
-
-    */
     public double turnRate;
-    /**
-
-    */
     public int isAccel; // is accelerating
-    /**
-
-    */
     public boolean isBoosting;
-    /**
-
-    */
     public boolean turningLeft;
-    /**
-
-    */
     public boolean turningRight;
-    /**
-
-    */
     public int firing;
-    /**
-
-    */
     protected String name;
-    /**
-
-    */
     protected BufferedImage origObjImg;
-    /**
-
-    */
     public int diam;
-    /**
-
-    */
     public int structInteg; // structural integrity
-    /**
-
-    */
     public int countDown;
 
-    /**
-
-    */
     protected SpaceObj() {}
-    /**
-
-    */
     public SpaceObj(double mv) {
         maxVelocity = mv;
         isBoosting = false;
         alive = true;
         countDown = 0;
     }
-    /**
-
-    */
     public double getdx() {
         return dx;
     }
-    /**
-
-    */
     public double getdy() {
         return dy;
     }
-    /**
-
-    */
     public void accelerate() {
         // This is wrong. As it is, they can go faster to the NW/NE/SW/SE than they can in any other
         //     direction. But I'm having trouble thinking of a way to do it and there are many other things
@@ -165,23 +84,14 @@ public abstract class SpaceObj {
     if(currentVelocity < accelRate / 10)
         dx = dy = 0;
     }
-    /**
-
-    */
     public void checkHeightWidth() {
         if(origObjImg.getHeight() != origObjImg.getWidth()) {
             System.out.println(name + "'s image is not square");
         }
     }
-    /**
-
-    */
     public BufferedImage getImage() {
         return origObjImg;
     }
-    /**
-
-    */
     public void die() {
         isAccel = 0;
         turningRight = false;
