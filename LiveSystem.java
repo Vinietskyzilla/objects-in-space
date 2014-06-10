@@ -24,11 +24,11 @@ public class LiveSystem {
     protected LiveSystem() {}
 
     public LiveSystem(int level) {
-        shipID = 2;
+        shipID = 1;
         thisSystemWidth = 10000;
         thisSystemHeight = 10000;
        
-        hero = new PlayerShip(0, 0, 1);
+        hero = new PlayerShip(0, 0, shipID);
         ships = new LinkedList<Ship>();
         projectiles = new LinkedList<Weapon>();
         stars = new ArrayList<Star>();
@@ -78,13 +78,41 @@ public class LiveSystem {
     }
 
     private void spawnShips(int level) {
-        ships.add(new Fighter(100, 100, getNextShipID() + level));
-        ships.add(new Fighter(-100, -100, getNextShipID() + level));
-        ships.add(new Fighter(-200, 200, getNextShipID() + level * 2));
+        Fighter f;
+        f = new Fighter((int)(Math.random() * 4000)-2000, (int)(Math.random() * 4000)-2000, getNextShipID());
+        f.maxVelocity = (f.shipID + level) / 3;
+        ships.add(f);
+        f = new Fighter((int)(Math.random() * 4000)-2000, (int)(Math.random() * 4000)-2000, getNextShipID());
+        f.maxVelocity = (f.shipID + level) / 3;
+        ships.add(f);
+        f = new Fighter((int)(Math.random() * 4000)-2000, (int)(Math.random() * 4000)-2000, getNextShipID());
+        f.maxVelocity = (f.shipID + level) / 3;
+        ships.add(f);
+        f = new Fighter((int)(Math.random() * 4000)-2000, (int)(Math.random() * 4000)-2000, getNextShipID());
+        f.maxVelocity = (f.shipID + level) / 3;
+        ships.add(f);
+        f = new Fighter((int)(Math.random() * 4000)-2000, (int)(Math.random() * 4000)-2000, getNextShipID());
+        f.maxVelocity = (f.shipID + level) / 3;
+        ships.add(f);
+        f = new Fighter((int)(Math.random() * 4000)-2000, (int)(Math.random() * 4000)-2000, getNextShipID());
+        f.maxVelocity = (f.shipID + level) / 3;
+        ships.add(f);
+        f = new Fighter((int)(Math.random() * 4000)-2000, (int)(Math.random() * 4000)-2000, getNextShipID());
+        f.maxVelocity = (f.shipID + level) / 3;
+        ships.add(f);
+        f = new Fighter((int)(Math.random() * 4000)-2000, (int)(Math.random() * 4000)-2000, getNextShipID());
+        f.maxVelocity = (f.shipID + level) / 3;
+        ships.add(f);
+        f = new Fighter((int)(Math.random() * 4000)-2000, (int)(Math.random() * 4000)-2000, getNextShipID());
+        f.maxVelocity = (f.shipID + level) / 3;
+        ships.add(f);
+        f = new Fighter((int)(Math.random() * 4000)-2000, (int)(Math.random() * 4000)-2000, getNextShipID());
+        f.maxVelocity = (f.shipID + level) / 3;
+        ships.add(f);
     }
 
     public int getNextShipID() {
-        return shipID++;
+        return ++shipID;
     }
 
     public void fireWeapons() {
