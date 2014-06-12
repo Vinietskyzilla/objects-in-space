@@ -308,29 +308,29 @@ public class Game {
                 synchronized (LiveSystemCopyMutex) {  
                     PlayerShip hero = physicsLS.hero;
                     if (hero.alive) {
-                        if(keyCode == KeyEvent.VK_LEFT)
+                        if(keyCode == KeyEvent.VK_LEFT) {
                             hero.turningLeft = true;
-                        if(keyCode == KeyEvent.VK_RIGHT)
+                        } else if(keyCode == KeyEvent.VK_RIGHT) {
                             hero.turningRight = true;
-                        if(keyCode == KeyEvent.VK_UP)
-                            if(hero.isAccel == 0)
-                                hero.isAccel = 1;
-                        if (keyCode == KeyEvent.VK_Z) {
-                            if(hero.isAccel == 0)
-                                hero.isAccel = 1;
+                        } else if(keyCode == KeyEvent.VK_UP) {
+                            hero.playerIsAccel = true;
+                        } else if (keyCode == KeyEvent.VK_Z) {
                             hero.isBoosting = true;
-                        }
-
-                        if(keyCode == KeyEvent.VK_SPACE) {
+                        } else if(keyCode == KeyEvent.VK_SPACE) {
                             if(hero.firing == 0)
                                 hero.firing = 1;
                         }
                         // DEBUG
-                        if(keyCode == KeyEvent.VK_M)
+                        else if(keyCode == KeyEvent.VK_M) {
                             if(physicsLS.centerSpaceObj instanceof PlayerShip)
                                 physicsLS.makeCenter(physicsLS.ships.get(0));
                             else
                                 physicsLS.makeCenter(physicsLS.hero);
+                        }
+
+                        if ((hero.playerIsAccel || hero.isBoosting) && hero.isAccel == 0) {
+                            hero.isAccel = 1;
+                        }
                     }
                 }
                 if(keyCode == KeyEvent.VK_ESCAPE)
@@ -345,21 +345,19 @@ public class Game {
                     PlayerShip hero = physicsLS.hero;
                     if (hero.alive) {
                         if (keyCode == KeyEvent.VK_UP) {
-                            hero.isAccel = 0;
-                        }
-                        else if (keyCode == KeyEvent.VK_Z) {
-                            hero.isAccel = 0;
+                            hero.playerIsAccel = false;
+                        } else if (keyCode == KeyEvent.VK_Z) {
                             hero.isBoosting = false;
-                        }
-                        else if (keyCode == KeyEvent.VK_LEFT) {
+                        } else if (keyCode == KeyEvent.VK_LEFT) {
                             hero.turningLeft = false;
-                        }
-                        else if (keyCode == KeyEvent.VK_RIGHT) {
+                        } else if (keyCode == KeyEvent.VK_RIGHT) {
                             hero.turningRight = false;
-                        }
-                        else if(keyCode == KeyEvent.VK_SPACE) {
+                        } else if(keyCode == KeyEvent.VK_SPACE) {
                             hero.firing = 0;
                         }
+
+                        if (!hero.playerIsAccel && !hero.isBoosting)
+                            hero.isAccel = 0;
                     }
                 }
                 e.consume();

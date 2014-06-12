@@ -3,6 +3,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 public class PlayerShip extends Ship {
     int structIntegInit;
+    boolean playerIsAccel;
     protected PlayerShip() {}
     public PlayerShip(int X, int Y, int sID) {
         // pass maxVelocity to SpaceObj
@@ -21,6 +22,7 @@ public class PlayerShip extends Ship {
         dx = 0;
         dy = 0; // y increases UPWARD
         accelRate = .2;
+        playerIsAccel = false;
         turnRate = Math.PI / 160;
 
         origObjImg = null;
