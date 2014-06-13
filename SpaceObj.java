@@ -21,7 +21,7 @@ public abstract class SpaceObj {
     // Absolute maximum velocity.
     public double maxVelocity;
     // Rate of acceleration or dv/dt.
-    public double accelRate;
+    public double baseAccelRate;
     public double turnRate;
     // Is accelerating.
     public int isAccel;
@@ -37,58 +37,48 @@ public abstract class SpaceObj {
         maxVelocity = mv;
         isBoosting = false;
     }
-    public double getdx() {
-        return dx;
-    }
-    public double getdy() {
-        return dy;
-    }
     public void accelerate() {
-        // This is wrong. As it is, they can go faster to the NW/NE/SW/SE than
-        // they can in any other direction.
-        double currentVelocity = Math.sqrt(dx*dx + dy*dy);
-        double slowAccel = 1;
-        if(currentVelocity < accelRate)
-            slowAccel = .2;
-        double dx2, dy2;
+        
+        double accelRate = baseAccelRate;
+        double currentMagnitude = Math.sqrt(dx*dx + dy*dy);
+
         if (isBoosting) {
-            dx2 = dx + 2*(Math.cos(angle)*accelRate*slowAccel);
-            dy2 = dy + 2*(Math.sin(angle)*accelRate*slowAccel);
-            if(dx2 <= 2*maxVelocity && dx2 >= -2*maxVelocity)
-                dx = dx2;
-            if(dy2 <= 2*maxVelocity && dy2 >= -2*maxVelocity)
-                dy = dy2;
-        } else {
-            dx2 = Math.cos(angle)*accelRate*slowAccel;
-            dy2 = Math.sin(angle)*accelRate*slowAccel;
-            if((dx + dx2 <= maxVelocity && dx + dx2 >= -maxVelocity) ||
-                (dx2 < 0 && dx > 0) || (dx2 > 0 && dx < 0))
-                dx = dx + dx2;
-            if((dy + dy2 <= maxVelocity && dy + dy2 >= -maxVelocity) ||
-                (dy2 < 0 && dy > 0) || (dy2 > 0 && dy < 0))
-                dy = dy + dy2;
+            accelRate *= 2;
+        } else if (this instanceof Ship && currentMagnitude < accelRate) {
+            // If currently travelling slowly, then accelerate slowly.
+            accelRate *= .2;
         }
 
-        // double currentVelocity = Math.sqrt(dx*dx + dy*dy);
-        // double newVelocity = Math.sqrt(dx2*dx2 + dy2*dy2);
-        // if(newVelocity <= maxVelocity) {
-            // dx = dx2;
-            // dy = dy2;
-        // }
+        // Determining new velocity: Take the vector representing the current
+        // velocity and the vector representing the addition of this increment
+        // of acceleration, and add them together. If the magnitude of this
+        // new vector is less than or equal to maxVelocity, we're done. If it's
+        // greater, then we need to find the vector with length maxVelocity and
+        // with direction of the sum vector. (Another way to visualize this is
+        // where the sum vector intersects a circle with radius maxVelocity.)
 
-    // The purpose of this part is to make it possible to come to a complete
-    // stop. The idea is, if the player achieves a VERY slow velocity by
-    // thrusting in the direction opposite to their inertia, they must be
-    // trying to stop. Trouble is, if their ship's acceleration is slow enough,
-    // this might prevent them from moving at all, or at least moving in
-    // certain directions, especially if they're at rest.
-    currentVelocity = Math.sqrt(dx*dx + dy*dy);
-    if(currentVelocity < accelRate / 10)
-        dx = dy = 0;
-    }
-    public void checkHeightWidth() {
-        if(origObjImg.getHeight() != origObjImg.getWidth()) {
-            System.out.println(name + "'s image is not square");
+        // Take the vector representing the current velocity...
+        double startDX = dx,
+               startDY = dy;
+        // and the vector representing the addition of this increment of
+        // acceleration...
+        double accelDX = Math.cos(angle) * accelRate,
+               accelDY = Math.sin(angle) * accelRate;
+        // and add them together.
+        dx += accelDX;
+        dy += accelDY;
+        // If the magnitude of this new vector...
+        double newMagnitude = Math.sqrt(dx*dx + dy*dy);
+        // is less than or equal to maxVelocity, we're done. If it's greater...
+        if ((newMagnitude > maxVelocity && !isBoosting)
+            || newMagnitude > maxVelocity * 2) {
+            // then we need to find the vector with length maxVelocity and with
+            // direction of the sum vector.
+            double theta = Math.atan(dy/dx);
+            if (dx < 0)
+              theta += Math.PI;
+            dx = Math.cos(theta) * maxVelocity;
+            dy = Math.sin(theta) * maxVelocity;
         }
     }
     public void die() {
@@ -100,7 +90,7 @@ public abstract class SpaceObj {
         if(dx < 0)
             xDirection = Math.PI;
         // If the ship is not motionless, which would screw up the angle
-        // calculation, then...
+        // calculation, then calculate the new angle.
         if(dx != 0 || dy != 0)
             angle = Math.atan(dy/dx) + xDirection;
         try {

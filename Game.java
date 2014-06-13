@@ -2,7 +2,6 @@
 //    Objects in Space
 //
 //    By David Winiecki
-//      January 2011
 //
 
 import java.awt.*;
@@ -125,7 +124,7 @@ public class Game {
             actP.requestFocusInWindow();
             boolean levelComplete = false;
             int endLevelPauseCount = 0;
-            double countTo = 300;
+            double countTo = 200;
             long loopTime = new Date().getTime();
             long paintTime = 16;
             while(levelComplete == false) {

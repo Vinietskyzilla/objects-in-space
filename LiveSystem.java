@@ -83,12 +83,12 @@ public class LiveSystem {
     }
 
     private void spawnShips(int level) {
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < level + 2; i++) {
             ships.add(new Fighter(
                 (int)(Math.random() * 1000 * level) - 500 * level,
                 (int)(Math.random() * 1000 * level) - 500 * level,
                 getNextShipID(),
-                (level+1)/3
+                level/4.0
             ));
         }
     }
@@ -128,7 +128,7 @@ public class LiveSystem {
             //    break;
             default:
                 return new LaserBullet(s.x, s.y, s.dx, s.dy, s.maxVelocity,
-                    s.accelRate, s.angle, s.shipID);
+                    s.baseAccelRate, s.angle, s.shipID);
         }
     }
 

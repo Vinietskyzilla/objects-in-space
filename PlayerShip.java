@@ -22,7 +22,7 @@ public class PlayerShip extends Ship {
         dx = 0;
         // y increases UPWARD.
         dy = 0;
-        accelRate = .2;
+        baseAccelRate = .2;
         playerIsAccel = false;
         turnRate = Math.PI / 160;
 

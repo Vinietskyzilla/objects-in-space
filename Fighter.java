@@ -4,7 +4,7 @@ import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 public class Fighter extends Ship {
     protected Fighter() {}
-    public Fighter(int X, int Y, int sID, int mv) {
+    public Fighter(int X, int Y, int sID, double mv) {
         // pass maxVelocity to SpaceObj
         super(mv);
 
@@ -19,7 +19,7 @@ public class Fighter extends Ship {
         y = Y;
         dx = 0;
         dy = 0; // y increases UPWARD
-        accelRate = .06;
+        baseAccelRate = .06;
         turnRate = Math.random()*Math.PI / (1200) + Math.PI / (1200);
         isAccel = 1;
         if(Math.random() > .5)
