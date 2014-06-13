@@ -64,6 +64,7 @@ public class LiveSystem {
         updatePositions();
         checkCollisions();
         kill();
+        ai();
     }
 
     public boolean enemiesRemain() {
@@ -83,13 +84,17 @@ public class LiveSystem {
     }
 
     private void spawnShips(int level) {
-        for (int i = 0; i < level + 2; i++) {
+
+        int fighterCount = level + 2;
+
+        for (int i = 0; i < fighterCount; i++) {
             ships.add(new Fighter(
-                (int)(Math.random() * 1000 * level) - 500 * level,
-                (int)(Math.random() * 1000 * level) - 500 * level,
-                getNextShipID(),
-                level/4.0
-            ));
+                  (int)(Math.random() * 1000 * fighterCount)
+                  - 500 * fighterCount,
+                  (int)(Math.random() * 1000 * fighterCount)
+                  - 500 * fighterCount,
+                  getNextShipID(),
+                  1));//level/4.0));
         }
     }
 
@@ -145,33 +150,40 @@ public class LiveSystem {
     private void updatePositions() {
 
         // Modify rotation.
-        if(hero.turningLeft) {
-            hero.angle += hero.turnRate;
-            if(hero.angle > 2*Math.PI)
-                hero.angle -= 2*Math.PI;
-        }
-        if(hero.turningRight) {
-            hero.angle -= hero.turnRate;
-            if(hero.angle < 0)
-                hero.angle += 2*Math.PI;
+        if (hero.status == ShipStatus.ALIVE) {
+        
+            // East is 0, west is -pi. Pi is outside the range of directions.
+            if(hero.turningLeft) {
+                hero.angle += hero.turnRate;
+                if(hero.angle >= Math.PI)
+                    hero.angle -= 2*Math.PI;
+            }
+            if(hero.turningRight) {
+                hero.angle -= hero.turnRate;
+                if(hero.angle < -Math.PI)
+                    hero.angle += 2*Math.PI;
+            }
         }
 
         for(Ship s : ships) {
-            if(s.turningLeft) {
-                s.angle += s.turnRate;
-                if(s.angle > 2*Math.PI)
-                    s.angle -= 2*Math.PI;
-            }
-            if(s.turningRight) {
-                s.angle -= s.turnRate;
-                if(s.angle < 0)
-                    s.angle += 2*Math.PI;
+            if(s.status == ShipStatus.ALIVE) {
+                if(s.turningLeft) {
+                    s.angle += s.turnRate;
+                    if(s.angle >= Math.PI)
+                        s.angle -= 2*Math.PI;
+                }
+                if(s.turningRight) {
+                    s.angle -= s.turnRate;
+                    if(s.angle < -Math.PI)
+                        s.angle += 2*Math.PI;
+                }
             }
         }
 
         // Modify velocity and position.
         for(Ship s : ships) {
-            intervalAccel(s);
+            if(s.status == ShipStatus.ALIVE)
+                intervalAccel(s);
             s.x += s.dx;
             s.y += s.dy;
         }
@@ -180,7 +192,8 @@ public class LiveSystem {
             w.x += w.dx;
             w.y += w.dy;
         }
-        intervalAccel(hero);
+        if(hero.status == ShipStatus.ALIVE)
+            intervalAccel(hero);
         // Bring speed back down from boosting. (Don't give extra speed for
         // free.)
         if (!hero.isBoosting) {
@@ -342,6 +355,43 @@ public class LiveSystem {
             --hero.countDown;
             if(hero.countDown <= Ship.COUNTDOWN_END) {
                 hero.status = ShipStatus.DEAD;
+            }
+        }
+    }
+
+    public void ai() {
+
+        // Have all ships follow the player's ship.
+        for (Ship s : ships) {
+
+            double dx = hero.x - s.x,
+                   dy = hero.y - s.y;
+
+            double theta = Math.atan(dy/dx);
+
+            // East is 0, west is -pi. Pi is outside the range of directions.
+            
+            if (dx < 0 && theta < 0) {
+                theta += Math.PI;
+            } else if (dx < 0 && theta >= 0) {
+                theta -= Math.PI;
+            }
+
+            if (s.angle < -Math.PI / 2 && theta > Math.PI / 2) {
+                s.turningRight = true;
+                s.turningLeft = false;
+            } else if (s.angle > Math.PI / 2 && theta < -Math.PI / 2) {
+                s.turningRight = false;
+                s.turningLeft = true;
+            } else if (theta - s.angle > 0.1) {
+                s.turningRight = false;
+                s.turningLeft = true;
+            } else if (theta - s.angle < -0.1) {
+                s.turningRight = true;
+                s.turningLeft = false;
+            } else {
+                s.turningRight = false;
+                s.turningLeft = false;
             }
         }
     }

@@ -16,13 +16,13 @@ public class Fighter extends Ship {
         weapons.add(Weapon.LB);
         structInteg = 50;
 
-        angle = Math.random()*2*Math.PI;
+        angle = Math.random()*2*Math.PI - Math.PI;
         x = X;
         y = Y;
         dx = 0;
-        dy = 0; // y increases UPWARD
-        baseAccelRate = .06;
-        turnRate = Math.random()*Math.PI / (1200) + Math.PI / (1200);
+        dy = 0;
+        baseAccelRate = .1;
+        turnRate = Math.PI / 700;
         isAccel = 1;
         if(Math.random() > .5)
             turningRight = true;

@@ -10,7 +10,8 @@ public abstract class SpaceObj {
     public String name;
     // Structural integrity.
     public int structInteg;
-    // Current angle in radians. (East is 0 or 2*PI.)
+    // Current angle in radians.
+    // East is 0, west is -pi. Pi is outside the range of directions.
     public double angle;
     public double x;
     public double y;
@@ -77,7 +78,7 @@ public abstract class SpaceObj {
             // direction of the sum vector.
             double theta = Math.atan(dy/dx);
             if (dx < 0)
-              theta += Math.PI;
+                theta += Math.PI;
             dx = Math.cos(theta) * maxVelocity;
             dy = Math.sin(theta) * maxVelocity;
         }
@@ -88,16 +89,25 @@ public abstract class SpaceObj {
     }
     public void die() {
         isAccel = 0;
+        isBoosting = false;
         turningRight = false;
         turningLeft = false;
         firing = 0;
-        double xDirection = 0;
-        if(dx < 0)
-            xDirection = Math.PI;
         // If the ship is not motionless, which would screw up the angle
         // calculation, then calculate the new angle.
-        if(dx != 0 || dy != 0)
-            angle = Math.atan(dy/dx) + xDirection;
+        if (dx != 0 || dy != 0) {
+            // East is 0, west is -pi. Pi is outside the range of directions.
+            // I think Math.atan returns theta in the range {-pi/2, pi/2}. (I
+            // think it can differentiate between straight down and straight
+            // up because Java has Infinity and -Infinity.)
+            angle = Math.atan(dy/dx);
+            if (dx < 0) {
+                if (angle >= 0)
+                    angle -= Math.PI;
+                else
+                    angle += Math.PI;
+            }
+        }
         try {
             origObjImg =
               ImageIO.read(getClass().getResource("ballofflame.png"));
