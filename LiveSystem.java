@@ -8,6 +8,7 @@ public class LiveSystem {
     // Height of the current system. Objects that exceed the system bounds are
     // moved to the opposite side of the system. (The system is a torus.)
     int thisSystemHeight;
+    int viewWidth, viewHeight, starWidth, starHeight;
     // Player's ship.
     PlayerShip hero;
     // Contains all ships.
@@ -28,10 +29,14 @@ public class LiveSystem {
 
     protected LiveSystem() {}
 
-    public LiveSystem(int level) {
+    public LiveSystem(int level, int viewWidth, int viewHeight) {
         shipID = 1;
         thisSystemWidth = 10000;
         thisSystemHeight = 10000;
+        this.viewWidth = viewWidth;
+        this.viewHeight = viewHeight;
+        starWidth = 2*viewWidth;
+        starHeight = 2*viewHeight;
 
         hero = new PlayerShip(0, 0, shipID);
         ships = new LinkedList<Ship>();
@@ -48,6 +53,10 @@ public class LiveSystem {
     public LiveSystem(LiveSystem obj) {
         thisSystemWidth = obj.thisSystemWidth;
         thisSystemHeight = obj.thisSystemHeight;
+        viewWidth = obj.viewWidth;
+        viewHeight = obj.viewHeight;
+        starWidth = obj.starWidth;
+        starHeight = obj.starHeight;
         hero = obj.hero;
         // Shallow copy of all objects in list.
         ships = new LinkedList<Ship>(obj.ships);
@@ -72,14 +81,14 @@ public class LiveSystem {
     }
 
     public void populateStars(ArrayList<Star> s) {
-        for(int i = 0; i < 200; i++) {
-            s.add(new Star(4000, 4000));
+        for(int i = 0; i < 50; i++) {
+            s.add(new Star(starWidth*2, starHeight*2));
         }
     }
 
     public void populateDust(ArrayList<Dust> s) {
-        for(int i = 0; i < 150; i++) {
-            s.add(new Dust(4000, 4000));
+        for(int i = 0; i < 20; i++) {
+            s.add(new Dust(starWidth*2, starHeight*2));
         }
     }
 
@@ -257,27 +266,27 @@ public class LiveSystem {
             // seem far away. (Parallaxing!)
             s.x -= centerSpaceObj.dx / 3;
             s.y -= centerSpaceObj.dy / 3;
-            if(s.x < -2000)
-                s.x += 4000;
-            else if(s.x > 2000)
-                s.x -= 4000;
-            if(s.y < -2000)
-                s.y += 4000;
-            else if(s.y > 2000)
-                s.y -= 4000;
+            if(s.x < -starWidth / 2)
+                s.x += starWidth;
+            else if(s.x > starWidth / 2)
+                s.x -= starWidth;
+            if(s.y < -starHeight / 2)
+                s.y += starHeight;
+            else if(s.y > starHeight / 2)
+                s.y -= starHeight;
         }
         for(Dust s : dust) {
             // Have space dust move past at full speed.
             s.x -= centerSpaceObj.dx;
             s.y -= centerSpaceObj.dy;
-            if(s.x < -2000)
-                s.x += 4000;
-            else if(s.x > 2000)
-                s.x -= 4000;
-            if(s.y < -2000)
-                s.y += 4000;
-            else if(s.y > 2000)
-                s.y -= 4000;
+            if(s.x < -starWidth / 2)
+                s.x += starWidth;
+            else if(s.x > starWidth / 2)
+                s.x -= starWidth;
+            if(s.y < -starHeight / 2)
+                s.y += starHeight;
+            else if(s.y > starHeight / 2)
+                s.y -= starHeight;
         }
     }
 

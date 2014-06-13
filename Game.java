@@ -116,7 +116,7 @@ public class Game {
         // Passes control back to up, the UpdatePanel, when the level is
         // complete by calling actP.nextPanel() (ActionPanel.nextPanel()).
         public void run() {
-            paintLS = new LiveSystem(level);
+            paintLS = new LiveSystem(level, panelWidth, panelHeight);
             physicsLS = new LiveSystem(paintLS);
             frame.getContentPane().add(actP);
             frame.getContentPane().validate();
