@@ -8,23 +8,25 @@ public class PlayerShip extends Ship {
     public PlayerShip(int X, int Y, int sID) {
         // Pass maxVelocity to SpaceObj.
         super(5);
+        turnRate = Math.PI / 160;
+        baseAccelRate = .2;
 
-        name = "PlayerShip";
-        shipID = sID;
-
-        weapons.add(Weapon.LB);
+        mass = 4;
+        
         structIntegInit = 150;
         structInteg = structIntegInit;
+       
+        weapons.add(Weapon.LB);
+        
+        name = "PlayerShip";
+        shipID = sID;
 
         angle = .5*Math.PI;
         x = X;
         y = Y;
         dx = 0;
-        // y increases UPWARD.
         dy = 0;
-        baseAccelRate = .2;
         playerIsAccel = false;
-        turnRate = Math.PI / 160;
 
         origObjImg = null;
         try {

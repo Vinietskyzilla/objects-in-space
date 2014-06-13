@@ -11,6 +11,8 @@ public class Fighter extends Ship {
         name = "Fighter";
         shipID = sID;
 
+        mass = 4;
+
         weapons.add(Weapon.LB);
         structInteg = 50;
 

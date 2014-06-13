@@ -10,6 +10,7 @@ public class LaserBullet extends Weapon {
         friendlyFire = false;
         fireRateInverse = 60;
         damage = 10;
+        mass = 0.5;
         x = X;
         y = Y;
         // Modify this to change RANGE.

@@ -20,6 +20,7 @@ public abstract class SpaceObj {
     protected double dy;
     // Absolute maximum velocity.
     public double maxVelocity;
+    public double mass;
     // Rate of acceleration or dv/dt.
     public double baseAccelRate;
     public double turnRate;
@@ -80,6 +81,10 @@ public abstract class SpaceObj {
             dx = Math.cos(theta) * maxVelocity;
             dy = Math.sin(theta) * maxVelocity;
         }
+    }
+    public void applyInertia(SpaceObj s) {
+        s.dx += dx * mass / s.mass;
+        s.dy += dy * mass / s.mass;
     }
     public void die() {
         isAccel = 0;

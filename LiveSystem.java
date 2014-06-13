@@ -294,6 +294,7 @@ public class LiveSystem {
                                 s.status = ShipStatus.DYING;
                                 s.die();
                             }
+                            w.applyInertia(s);
                             it.remove();
                         }
                     }
@@ -316,6 +317,7 @@ public class LiveSystem {
                             s.status = ShipStatus.DYING;
                             s.die();
                         }
+                        w.applyInertia(s);
                         it.remove();
                     }
                 }
