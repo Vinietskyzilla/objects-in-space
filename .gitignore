@@ -1,4 +1,6 @@
 *.class
-.DS_Store
+*.jar
 javadoc
 javadoc/*
+
+.DS_Store
