@@ -232,8 +232,8 @@ public class LiveSystem {
                 hero.y -= thisSystemHeight;
         }
         
-        centerSpaceObj.x -= centerSpaceObj.dx;
-        centerSpaceObj.y -= centerSpaceObj.dy;
+        centerSpaceObj.x = 0;
+        centerSpaceObj.y = 0;
 
         for(Star s : stars) {
             // change by movement divided by 3 so that stars move slowly and seem far away
