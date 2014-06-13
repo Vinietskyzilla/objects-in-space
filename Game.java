@@ -88,9 +88,9 @@ public class Game {
 
         // Ensure the window header bar is visible.
         // NOT COMPATIBLE with the above full screen option.
-        // if(windowX < 0)
+        // if (windowX < 0)
         //     windowX = 0;
-        // if(windowY < 0)
+        // if (windowY < 0)
         //     windowY = 0;
 
         frame.setLayout(null);
@@ -138,9 +138,9 @@ public class Game {
                 }
 
                 actP.repaint();
-                if(paintTime >= 16) {
+                if (paintTime >= 16) {
                     paintTime = 0;
-                    if(physicsLS.enemiesRemain() == false
+                    if (physicsLS.enemiesRemain() == false
                         || physicsLS.hero.status == ShipStatus.DEAD) {
                         ++endLevelPauseCount;
                     }
@@ -149,12 +149,12 @@ public class Game {
                     // Make sure that the game runs at the same speed on all
                     // systems.
                     msStart = 4 - (new Date().getTime() - msStart);
-                    if(msStart > 0)
+                    if (msStart > 0)
                         Thread.sleep(msStart);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                if(endLevelPauseCount >= countTo)
+                if (endLevelPauseCount >= countTo)
                     levelComplete = true;
                 paintTime += new Date().getTime() - loopTime;
                 loopTime = new Date().getTime();
@@ -199,18 +199,18 @@ public class Game {
                 g2d.fillRect(0, 0, panelWidth, panelHeight);
                 List<Ship> ships = paintLS.ships;
                 PlayerShip hero = paintLS.hero;
-                List<Weapon> projectiles = paintLS.projectiles;
+                List<Projectile> projectiles = paintLS.projectiles;
                 ArrayList<Dust> dust = paintLS.dust;
                 ArrayList<Star> stars = paintLS.stars;
                 int thisSystemWidth = paintLS.thisSystemWidth;
                 int thisSystemHeight = paintLS.thisSystemHeight;
                 // Draw stars and dust.
-                for(Star s : stars) {
+                for (Star s : stars) {
                     g2d.setColor(s.color);
                     g2d.fillOval((int) (s.x + panelWidth / 2),
                         (int) (-(s.y) + panelHeight / 2), s.diam, s.diam);
                 }
-                for(Dust s : dust) {
+                for (Dust s : dust) {
                     g2d.setColor(s.color);
                     g2d.fillOval((int) (s.x + panelWidth / 2),
                         (int) (-(s.y) + panelHeight / 2), s.diam, s.diam);
@@ -222,7 +222,7 @@ public class Game {
                 int yRot;
                 int frameX;
                 int frameY;
-                for(Ship s : ships) {
+                for (Ship s : ships) {
                     origXform = g2d.getTransform();
                     newXform = (AffineTransform)(origXform.clone());
                     // The center of rotation is the position of the object in
@@ -240,7 +240,7 @@ public class Game {
                     g2d.drawImage(s.origObjImg, frameX, frameY, this);
                     g2d.setTransform(origXform);
                 }
-                for(Weapon w : projectiles) {
+                for (Projectile w : projectiles) {
                     g2d.setColor(Color.yellow);
                     g2d.fillOval((int) (w.x + panelWidth / 2 - w.diam / 2),
                         (int) (-(w.y) + panelHeight / 2 - w.diam / 2),
@@ -281,9 +281,9 @@ public class Game {
                 // before each new level begins to save some computations. (At
                 // least the parts of the calculations that don't depend on
                 // current position of the object.)
-                for(Ship s : ships) {
+                for (Ship s : ships) {
                     // This if statement is extra for later.
-                    // if(s.isHostile)
+                    // if (s.isHostile)
                     g2d.setColor(Color.red);
                     // else
                     // g2d.setColor(Color.green);
@@ -317,21 +317,20 @@ public class Game {
                 synchronized (LiveSystemCopyMutex) {
                     PlayerShip hero = physicsLS.hero;
                     if (hero.status == ShipStatus.ALIVE) {
-                        if(keyCode == KeyEvent.VK_LEFT) {
+                        if (keyCode == KeyEvent.VK_LEFT) {
                             hero.turningLeft = true;
-                        } else if(keyCode == KeyEvent.VK_RIGHT) {
+                        } else if (keyCode == KeyEvent.VK_RIGHT) {
                             hero.turningRight = true;
-                        } else if(keyCode == KeyEvent.VK_UP) {
+                        } else if (keyCode == KeyEvent.VK_UP) {
                             hero.playerIsAccel = true;
                         } else if (keyCode == KeyEvent.VK_Z) {
                             hero.isBoosting = true;
-                        } else if(keyCode == KeyEvent.VK_SPACE) {
-                            if(hero.firing == 0)
-                                hero.firing = 1;
+                        } else if (keyCode == KeyEvent.VK_SPACE) {
+                            hero.firing = true;
                         }
                         // DEBUG
-                        else if(keyCode == KeyEvent.VK_M) {
-                            if(physicsLS.centerSpaceObj instanceof PlayerShip)
+                        else if (keyCode == KeyEvent.VK_M) {
+                            if (physicsLS.centerSpaceObj instanceof PlayerShip)
                                 physicsLS.makeCenter(physicsLS.ships.get(0));
                             else
                                 physicsLS.makeCenter(physicsLS.hero);
@@ -343,7 +342,7 @@ public class Game {
                         }
                     }
                 }
-                if(keyCode == KeyEvent.VK_ESCAPE)
+                if (keyCode == KeyEvent.VK_ESCAPE)
                     System.exit(0);
 
                 e.consume();
@@ -362,8 +361,8 @@ public class Game {
                             hero.turningLeft = false;
                         } else if (keyCode == KeyEvent.VK_RIGHT) {
                             hero.turningRight = false;
-                        } else if(keyCode == KeyEvent.VK_SPACE) {
-                            hero.firing = 0;
+                        } else if (keyCode == KeyEvent.VK_SPACE) {
+                            hero.firing = false;
                         }
 
                         if (!hero.playerIsAccel && !hero.isBoosting)

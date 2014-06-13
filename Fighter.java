@@ -8,12 +8,11 @@ public class Fighter extends Ship {
         // pass maxVelocity to SpaceObj
         super(mv);
 
-        name = "Fighter";
         shipID = sID;
 
         mass = 4;
 
-        weapons.add(Weapon.LB);
+        weapons.add(BulletGun.newDefaultWeapon(this));
         structInteg = 50;
 
         angle = Math.random()*2*Math.PI - Math.PI;
@@ -24,11 +23,11 @@ public class Fighter extends Ship {
         baseAccelRate = .1;
         turnRate = Math.PI / 700;
         isAccel = 1;
-        if(Math.random() > .5)
+        if (Math.random() > .5)
             turningRight = true;
         else
             turningLeft = true;
-        firing = 1;
+        firing = true;
 
         origObjImg = null;
         try {

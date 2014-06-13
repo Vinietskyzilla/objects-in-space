@@ -16,9 +16,8 @@ public class PlayerShip extends Ship {
         structIntegInit = 150;
         structInteg = structIntegInit;
        
-        weapons.add(Weapon.LB);
+        weapons.add(BulletGun.newDefaultWeapon(this));
         
-        name = "PlayerShip";
         shipID = sID;
 
         angle = .5*Math.PI;

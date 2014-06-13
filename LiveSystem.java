@@ -14,7 +14,7 @@ public class LiveSystem {
     // Contains all ships.
     List<Ship> ships;
     // Contains all projectiles.
-    List<Weapon> projectiles;
+    List<Projectile> projectiles;
     // Contains positions, diameters, and colors of non-interactive background
     // stars.
     ArrayList<Star> stars;
@@ -40,7 +40,7 @@ public class LiveSystem {
 
         hero = new PlayerShip(0, 0, shipID);
         ships = new LinkedList<Ship>();
-        projectiles = new LinkedList<Weapon>();
+        projectiles = new LinkedList<Projectile>();
         stars = new ArrayList<Star>();
         dust = new ArrayList<Dust>();
 
@@ -60,7 +60,7 @@ public class LiveSystem {
         hero = obj.hero;
         // Shallow copy of all objects in list.
         ships = new LinkedList<Ship>(obj.ships);
-        projectiles = new LinkedList<Weapon>(obj.projectiles);
+        projectiles = new LinkedList<Projectile>(obj.projectiles);
         stars = new ArrayList<Star>(obj.stars);
         dust = new ArrayList<Dust>(obj.dust);
         shipID = obj.shipID;
@@ -81,13 +81,13 @@ public class LiveSystem {
     }
 
     public void populateStars(ArrayList<Star> s) {
-        for(int i = 0; i < 50; i++) {
+        for (int i = 0; i < 50; i++) {
             s.add(new Star(starWidth*2, starHeight*2));
         }
     }
 
     public void populateDust(ArrayList<Dust> s) {
-        for(int i = 0; i < 20; i++) {
+        for (int i = 0; i < 20; i++) {
             s.add(new Dust(starWidth*2, starHeight*2));
         }
     }
@@ -112,46 +112,27 @@ public class LiveSystem {
     }
 
     public void fireWeapons() {
-        Weapon w;
-        int shipsSize = ships.size();
-        for(Ship s : ships) {
-            w = getWeapon(s);
-            if(s.firing == 1) {
-                // Fire!
-                projectiles.add(w);
-            }
-            if(s.firing > 0)
-                ++s.firing;
-            if(s.firing > w.fireRateInverse)
-                s.firing = 1;
+        for (Ship s : ships) {
+            fireShipWeapons(s);
         }
-        w = getWeapon(hero);
-        if(hero.firing == 1) {
-            projectiles.add(w);
-        }
-        if(hero.firing > 0)
-            ++hero.firing;
-        if(hero.firing > w.fireRateInverse)
-            hero.firing = 1;
+        fireShipWeapons(hero);
     }
 
-    public Weapon getWeapon(Ship s) {
-        switch(s.selectedWeapon) {
-            //case Weapon.LB:
-            //    return new LaserBullet(...);
-            //    break;
-            default:
-                return new LaserBullet(s.x, s.y, s.dx, s.dy, s.maxVelocity,
-                    s.baseAccelRate, s.angle, s.shipID);
+    public void fireShipWeapons(Ship s) {
+        for (Weapon w : s.weapons) {
+            Projectile p = w.generate();
+            if (!(p instanceof ProjectileBlank)) {
+                projectiles.add(p);
+            }
         }
     }
 
     private void expireProjectiles() {
-        Iterator<Weapon> it = projectiles.iterator();
+        Iterator<Projectile> it = projectiles.iterator();
         while (it.hasNext()) {
-            Weapon w = it.next();
-            ++w.cyclesLived;
-            if(w.cyclesLived >= w.timeToLive)
+            Projectile p = it.next();
+            ++p.cyclesLived;
+            if (p.cyclesLived >= p.ttl)
                 it.remove();
         }
     }
@@ -162,46 +143,46 @@ public class LiveSystem {
         if (hero.status == ShipStatus.ALIVE) {
         
             // East is 0, west is -pi. Pi is outside the range of directions.
-            if(hero.turningLeft) {
+            if (hero.turningLeft) {
                 hero.angle += hero.turnRate;
-                if(hero.angle >= Math.PI)
+                if (hero.angle >= Math.PI)
                     hero.angle -= 2*Math.PI;
             }
-            if(hero.turningRight) {
+            if (hero.turningRight) {
                 hero.angle -= hero.turnRate;
-                if(hero.angle < -Math.PI)
+                if (hero.angle < -Math.PI)
                     hero.angle += 2*Math.PI;
             }
         }
 
-        for(Ship s : ships) {
-            if(s.status == ShipStatus.ALIVE) {
-                if(s.turningLeft) {
+        for (Ship s : ships) {
+            if (s.status == ShipStatus.ALIVE) {
+                if (s.turningLeft) {
                     s.angle += s.turnRate;
-                    if(s.angle >= Math.PI)
+                    if (s.angle >= Math.PI)
                         s.angle -= 2*Math.PI;
                 }
-                if(s.turningRight) {
+                if (s.turningRight) {
                     s.angle -= s.turnRate;
-                    if(s.angle < -Math.PI)
+                    if (s.angle < -Math.PI)
                         s.angle += 2*Math.PI;
                 }
             }
         }
 
         // Modify velocity and position.
-        for(Ship s : ships) {
-            if(s.status == ShipStatus.ALIVE)
+        for (Ship s : ships) {
+            if (s.status == ShipStatus.ALIVE)
                 intervalAccel(s);
             s.x += s.dx;
             s.y += s.dy;
         }
-        for(Weapon w : projectiles) {
+        for (Projectile w : projectiles) {
             intervalAccel(w);
             w.x += w.dx;
             w.y += w.dy;
         }
-        if(hero.status == ShipStatus.ALIVE)
+        if (hero.status == ShipStatus.ALIVE)
             intervalAccel(hero);
         // Bring speed back down from boosting. (Don't give extra speed for
         // free.)
@@ -219,100 +200,100 @@ public class LiveSystem {
         hero.y += hero.dy;
 
         // Move everything based on movement of centerSpaceObj.
-        for(Ship s : ships) {
+        for (Ship s : ships) {
             if (s != centerSpaceObj) {
                 s.x -= centerSpaceObj.dx;
                 s.y -= centerSpaceObj.dy;
-                if(s.x < -thisSystemWidth/2)
+                if (s.x < -thisSystemWidth/2)
                     s.x += thisSystemWidth;
-                else if(s.x > thisSystemWidth/2)
+                else if (s.x > thisSystemWidth/2)
                     s.x -= thisSystemWidth;
-                if(s.y < -thisSystemHeight/2)
+                if (s.y < -thisSystemHeight/2)
                     s.y += thisSystemHeight;
-                else if(s.y > thisSystemHeight/2)
+                else if (s.y > thisSystemHeight/2)
                     s.y -= thisSystemHeight;
             }
         }
-        for(Weapon w : projectiles) {
+        for (Projectile w : projectiles) {
             w.x -= centerSpaceObj.dx;
             w.y -= centerSpaceObj.dy;
-            if(w.x < -thisSystemWidth/2)
+            if (w.x < -thisSystemWidth/2)
                 w.x += thisSystemWidth;
-            else if(w.x > thisSystemWidth/2)
+            else if (w.x > thisSystemWidth/2)
                 w.x -= thisSystemWidth;
-            if(w.y < -thisSystemHeight/2)
+            if (w.y < -thisSystemHeight/2)
                 w.y += thisSystemHeight;
-            else if(w.y > thisSystemHeight/2)
+            else if (w.y > thisSystemHeight/2)
                 w.y -= thisSystemHeight;
         }
         if (hero != centerSpaceObj) {
             hero.x -= centerSpaceObj.dx;
             hero.y -= centerSpaceObj.dy;
-            if(hero.x < -thisSystemWidth/2)
+            if (hero.x < -thisSystemWidth/2)
                 hero.x += thisSystemWidth;
-            else if(hero.x > thisSystemWidth/2)
+            else if (hero.x > thisSystemWidth/2)
                 hero.x -= thisSystemWidth;
-            if(hero.y < -thisSystemHeight/2)
+            if (hero.y < -thisSystemHeight/2)
                 hero.y += thisSystemHeight;
-            else if(hero.y > thisSystemHeight/2)
+            else if (hero.y > thisSystemHeight/2)
                 hero.y -= thisSystemHeight;
         }
 
         centerSpaceObj.x = 0;
         centerSpaceObj.y = 0;
 
-        for(Star s : stars) {
+        for (Star s : stars) {
             // Change by movement divided by 3 so that stars move slowly and
             // seem far away. (Parallaxing!)
             s.x -= centerSpaceObj.dx / 3;
             s.y -= centerSpaceObj.dy / 3;
-            if(s.x < -starWidth / 2)
+            if (s.x < -starWidth / 2)
                 s.x += starWidth;
-            else if(s.x > starWidth / 2)
+            else if (s.x > starWidth / 2)
                 s.x -= starWidth;
-            if(s.y < -starHeight / 2)
+            if (s.y < -starHeight / 2)
                 s.y += starHeight;
-            else if(s.y > starHeight / 2)
+            else if (s.y > starHeight / 2)
                 s.y -= starHeight;
         }
-        for(Dust s : dust) {
+        for (Dust s : dust) {
             // Have space dust move past at full speed.
             s.x -= centerSpaceObj.dx;
             s.y -= centerSpaceObj.dy;
-            if(s.x < -starWidth / 2)
+            if (s.x < -starWidth / 2)
                 s.x += starWidth;
-            else if(s.x > starWidth / 2)
+            else if (s.x > starWidth / 2)
                 s.x -= starWidth;
-            if(s.y < -starHeight / 2)
+            if (s.y < -starHeight / 2)
                 s.y += starHeight;
-            else if(s.y > starHeight / 2)
+            else if (s.y > starHeight / 2)
                 s.y -= starHeight;
         }
     }
 
     public void intervalAccel(SpaceObj s) {
-        if(s.isAccel == 1)
+        if (s.isAccel == 1)
             s.accelerate();
-        if(s.isAccel > 0)
+        if (s.isAccel > 0)
             ++s.isAccel;
-        if(s.isAccel > 4)
+        if (s.isAccel > 4)
             s.isAccel = 1;
     }
 
     public void checkCollisions() {
-        for(Ship s : ships) {
-            if(s.status == ShipStatus.ALIVE) {
-                Iterator<Weapon> it = projectiles.iterator();
+        for (Ship s : ships) {
+            if (s.status == ShipStatus.ALIVE) {
+                Iterator<Projectile> it = projectiles.iterator();
                 while (it.hasNext()) {
-                    Weapon w = it.next();
-                    if(w.friendlyFire || (w.shipID != s.shipID)) {
+                    Projectile w = it.next();
+                    if (w.friendlyFire || (w.shipID != s.shipID)) {
                         boolean hit = s.y - s.diam / 2 <= w.y &&
                             s.y + s.diam / 2 >= w.y &&
                             s.x + s.diam / 2 >= w.x &&
                             s.x - s.diam / 2 <= w.x;
-                        if(hit) {
+                        if (hit) {
                             s.structInteg -= w.damage;
-                            if(s.structInteg <= 0) {
+                            if (s.structInteg <= 0) {
                                 s.status = ShipStatus.DYING;
                                 s.die();
                             }
@@ -325,17 +306,17 @@ public class LiveSystem {
         }
         Ship s = hero;
         if (hero.status == ShipStatus.ALIVE) {
-            Iterator<Weapon> it = projectiles.iterator();
+            Iterator<Projectile> it = projectiles.iterator();
             while (it.hasNext()) {
-                Weapon w = it.next();
-                if(w.friendlyFire || (w.shipID != s.shipID)) {
+                Projectile w = it.next();
+                if (w.friendlyFire || (w.shipID != s.shipID)) {
                     boolean hit = s.y - s.diam / 2 <= w.y &&
                         s.y + s.diam / 2 >= w.y &&
                         s.x + s.diam / 2 >= w.x &&
                         s.x - s.diam / 2 <= w.x;
-                    if(hit) {
+                    if (hit) {
                         s.structInteg -= w.damage;
-                        if(s.structInteg <= 0) {
+                        if (s.structInteg <= 0) {
                             s.status = ShipStatus.DYING;
                             s.die();
                         }
@@ -352,17 +333,17 @@ public class LiveSystem {
         while (it.hasNext()) {
             Ship s = it.next();
 
-            if(s.status == ShipStatus.DYING) {
+            if (s.status == ShipStatus.DYING) {
                 --s.countDown;
-                if(s.countDown <= Ship.COUNTDOWN_END) {
+                if (s.countDown <= Ship.COUNTDOWN_END) {
                     s.status = ShipStatus.DEAD;
                     it.remove();
                 }
             }
         }
-        if(hero.status == ShipStatus.DYING) {
+        if (hero.status == ShipStatus.DYING) {
             --hero.countDown;
-            if(hero.countDown <= Ship.COUNTDOWN_END) {
+            if (hero.countDown <= Ship.COUNTDOWN_END) {
                 hero.status = ShipStatus.DEAD;
             }
         }
@@ -370,8 +351,9 @@ public class LiveSystem {
 
     public void ai() {
 
-        // Have all ships follow the player's ship.
         for (Ship s : ships) {
+
+            // Follow the player's ship.
 
             double dx = hero.x - s.x,
                    dy = hero.y - s.y;
@@ -402,7 +384,22 @@ public class LiveSystem {
                 s.turningRight = false;
                 s.turningLeft = false;
             }
+
+            // Only shoot if the player is nearby.
+
+            double range = 0, nextRange;
+            for (Weapon w : s.weapons) {
+                nextRange = w.range();
+                if (nextRange > range)
+                    range = nextRange;
+            }
+            double distance = Math.sqrt(dx*dx + dy*dy);
+            if (distance < range * 2)
+                s.firing = true;
+            else
+                s.firing = false;
         }
+
     }
 
     public void makeCenter(SpaceObj newCenter) {
@@ -413,7 +410,7 @@ public class LiveSystem {
         for (Ship s : ships) {
             translateWithCenter(s, x, y);
         }
-        for (Weapon w : projectiles) {
+        for (Projectile w : projectiles) {
             translateWithCenter(w, x, y);
         }
         translateWithCenter(hero, x, y);
@@ -424,13 +421,13 @@ public class LiveSystem {
     public void translateWithCenter(SpaceObj s, double x, double y) {
         s.x -= x;
         s.y -= y;
-        if(s.x < -thisSystemWidth/2)
+        if (s.x < -thisSystemWidth/2)
             s.x += thisSystemWidth;
-        else if(s.x > thisSystemWidth/2)
+        else if (s.x > thisSystemWidth/2)
             s.x -= thisSystemWidth;
-        if(s.y < -thisSystemHeight/2)
+        if (s.y < -thisSystemHeight/2)
             s.y += thisSystemHeight;
-        else if(s.y > thisSystemHeight/2)
+        else if (s.y > thisSystemHeight/2)
             s.y -= thisSystemHeight;
     }
 }

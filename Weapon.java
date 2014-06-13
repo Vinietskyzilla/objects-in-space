@@ -1,13 +1,20 @@
-public class Weapon extends SpaceObj {
-    public static final int LB = 0; // LaserBullet
+public abstract class Weapon {
 
-    public boolean friendlyFire;
-    public double timeToLive;
+    public int reloadTime;
+    protected int reloadProgress;
+    public double ammo;
+    public boolean isTurret;
+    public SpaceObj owner;
+
+    public double velocity;
+    public int ttl;
     public int damage;
-    public double cyclesLived;
-    public int fireRateInverse; // The lower the faster, minimum 1.
-    public Weapon(double mv) {
-        super(mv);
-        cyclesLived = 0;
+    public double mass;
+    public boolean friendlyFire;
+
+    public double range() {
+        return velocity * ttl;
     }
+
+    abstract Projectile generate();
 }

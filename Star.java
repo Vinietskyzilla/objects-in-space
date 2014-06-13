@@ -7,10 +7,10 @@ public class Star extends SpaceObj {
         // maxVelocity == 0
         super(0);
         int signX = -1;
-        if(Math.random() > .5)
+        if (Math.random() > .5)
             signX = 1;
         int signY = -1;
-        if(Math.random() > .5)
+        if (Math.random() > .5)
             signY = 1;
         x = (Math.random() * (width / 2)) * signX;
         y = (Math.random() * (height / 2)) * signY;

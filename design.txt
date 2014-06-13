@@ -1,0 +1,37 @@
+Weapon
+- BulletGun
+- TorpedoLauncher
+- MissileLauncher
+- DecoyLauncher
+- MineLayer
+- ProjectorSBeam
+- ProjectorCBeam
+- Exploder
+
+Weapon has bool isTurret.
+
+SpaceObj
+- Ship
+  - ShipPlayer
+  - Fighter
+- Projectile
+  - Bullet
+    - Torpedo
+      - Missile
+    - Decoy
+    - Mine
+  - Beam
+    - BeamStraight
+    - BeamCurved
+  - Explosion
+
+Missile and Mine create an Explosion when in proximity of target or expiring.
+
+Bullet and Explosion have optional image, optional color.
+
+Particular instances of Decoy include a list of applicable weapon names.
+
+BeamCurved may be a little too ambitious. Anything in contact with the curve must receive damage.
+
+interface ProjectileGuided
+- Torpedo

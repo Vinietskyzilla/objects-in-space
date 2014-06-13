@@ -5,20 +5,20 @@ import java.util.*;
 // weapons was a significant extra overhead for projectile objects, for
 // example, which are constantly created and destroyed.
 
-public class Ship extends SpaceObj {
+public abstract class Ship extends SpaceObj {
     public static final int COUNTDOWN_END = 0;
     public static final int COUNTDOWN_INIT = 170;
     public int countDown;
     public ShipStatus status;
-    public ArrayList<Integer> weapons;
+    public ArrayList<Weapon> weapons;
     // Index of selected weapon.
     public int selectedWeapon;
-    protected Ship() {}
+    protected Ship() { }
     public Ship(double mv) {
         super(mv);
         countDown = COUNTDOWN_INIT;
         status = ShipStatus.ALIVE;
-        weapons = new ArrayList<Integer>();
+        weapons = new ArrayList<Weapon>();
         selectedWeapon = 0;
     }
 }

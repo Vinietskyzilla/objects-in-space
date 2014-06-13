@@ -7,7 +7,6 @@ import javax.imageio.ImageIO;
 import java.io.*;
 public abstract class SpaceObj {
     public int shipID;
-    public String name;
     // Structural integrity.
     public int structInteg;
     // Current angle in radians.
@@ -30,7 +29,7 @@ public abstract class SpaceObj {
     public boolean isBoosting;
     public boolean turningLeft;
     public boolean turningRight;
-    public int firing;
+    public boolean firing;
     public BufferedImage origObjImg;
     public int diam;
 
@@ -92,7 +91,7 @@ public abstract class SpaceObj {
         isBoosting = false;
         turningRight = false;
         turningLeft = false;
-        firing = 0;
+        firing = false;
         // If the ship is not motionless, which would screw up the angle
         // calculation, then calculate the new angle.
         if (dx != 0 || dy != 0) {
