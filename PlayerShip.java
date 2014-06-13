@@ -6,7 +6,7 @@ public class PlayerShip extends Ship {
     boolean playerIsAccel;
     protected PlayerShip() {}
     public PlayerShip(int X, int Y, int sID) {
-        // pass maxVelocity to SpaceObj
+        // Pass maxVelocity to SpaceObj.
         super(5);
 
         name = "PlayerShip";
@@ -20,14 +20,16 @@ public class PlayerShip extends Ship {
         x = X;
         y = Y;
         dx = 0;
-        dy = 0; // y increases UPWARD
+        // y increases UPWARD.
+        dy = 0;
         accelRate = .2;
         playerIsAccel = false;
         turnRate = Math.PI / 160;
 
         origObjImg = null;
         try {
-            origObjImg = ImageIO.read(getClass().getResource("playership.png"));
+            origObjImg =
+              ImageIO.read(getClass().getResource("playership.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }

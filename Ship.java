@@ -11,7 +11,8 @@ public class Ship extends SpaceObj {
     public int countDown;
     public ShipStatus status;
     public ArrayList<Integer> weapons;
-    public int selectedWeapon; // index of selected weapon
+    // Index of selected weapon.
+    public int selectedWeapon;
     protected Ship() {}
     public Ship(double mv) {
         super(mv);

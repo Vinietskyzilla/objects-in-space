@@ -2,9 +2,11 @@ import java.util.*;
 import java.util.List;
 
 public class LiveSystem {
-    // Width of the current system. Objects that exceed the system bounds are moved to the opposite side of the system. (The system is a torus.)
+    // Width of the current system. Objects that exceed the system bounds are
+    // moved to the opposite side of the system. (The system is a torus.)
     int thisSystemWidth;
-    // Height of the current system. Objects that exceed the system bounds are moved to the opposite side of the system. (The system is a torus.)
+    // Height of the current system. Objects that exceed the system bounds are
+    // moved to the opposite side of the system. (The system is a torus.)
     int thisSystemHeight;
     // Player's ship.
     PlayerShip hero;
@@ -12,13 +14,16 @@ public class LiveSystem {
     List<Ship> ships;
     // Contains all projectiles.
     List<Weapon> projectiles;
-    // Contains positions, diameters, and colors of non-interactive background stars.
+    // Contains positions, diameters, and colors of non-interactive background
+    // stars.
     ArrayList<Star> stars;
-    // Contains positions, diameters, and color of non-interactive foreground dust.
+    // Contains positions, diameters, and color of non-interactive foreground
+    // dust.
     ArrayList<Dust> dust;
     // Used by the collision checker to prevent ships from shooting themselves.
     int shipID;
-    // A reference to the SpaceObj on which to center the window when playing the game.
+    // A reference to the SpaceObj on which to center the window when playing
+    // the game.
     SpaceObj centerSpaceObj;
 
     protected LiveSystem() {}
@@ -27,7 +32,7 @@ public class LiveSystem {
         shipID = 1;
         thisSystemWidth = 10000;
         thisSystemHeight = 10000;
-       
+
         hero = new PlayerShip(0, 0, shipID);
         ships = new LinkedList<Ship>();
         projectiles = new LinkedList<Weapon>();
@@ -37,9 +42,9 @@ public class LiveSystem {
         spawnShips(level);
         populateStars(stars);
         populateDust(dust);
-        makeCenter(hero); 
+        makeCenter(hero);
     }
-    
+
     public LiveSystem(LiveSystem obj) {
         thisSystemWidth = obj.thisSystemWidth;
         thisSystemHeight = obj.thisSystemHeight;
@@ -59,7 +64,7 @@ public class LiveSystem {
         updatePositions();
         checkCollisions();
         kill();
-    }      
+    }
 
     public boolean enemiesRemain() {
         return ships.size() > 0 ? true : false;
@@ -98,7 +103,7 @@ public class LiveSystem {
         for(Ship s : ships) {
             w = getWeapon(s);
             if(s.firing == 1) {
-                // fire!
+                // Fire!
                 projectiles.add(w);
             }
             if(s.firing > 0)
@@ -122,7 +127,8 @@ public class LiveSystem {
             //    return new LaserBullet(...);
             //    break;
             default:
-                return new LaserBullet(s.x, s.y, s.dx, s.dy, s.maxVelocity, s.accelRate, s.angle, s.shipID);
+                return new LaserBullet(s.x, s.y, s.dx, s.dy, s.maxVelocity,
+                    s.accelRate, s.angle, s.shipID);
         }
     }
 
@@ -138,8 +144,7 @@ public class LiveSystem {
 
     private void updatePositions() {
 
-        ///////////////////////
-        // modify rotation
+        // Modify rotation.
         if(hero.turningLeft) {
             hero.angle += hero.turnRate;
             if(hero.angle > 2*Math.PI)
@@ -164,8 +169,7 @@ public class LiveSystem {
             }
         }
 
-        /////////////////////////////////
-        // modify velocity and position
+        // Modify velocity and position.
         for(Ship s : ships) {
             intervalAccel(s);
             s.x += s.dx;
@@ -177,8 +181,8 @@ public class LiveSystem {
             w.y += w.dy;
         }
         intervalAccel(hero);
-        // Bring speed back down from boosting. (Don't
-        // give extra speed for free.)
+        // Bring speed back down from boosting. (Don't give extra speed for
+        // free.)
         if (!hero.isBoosting) {
             if (hero.dx > hero.maxVelocity)
               --hero.dx;
@@ -192,7 +196,7 @@ public class LiveSystem {
         hero.x += hero.dx;
         hero.y += hero.dy;
 
-        // move everything based on movement of centerSpaceObj
+        // Move everything based on movement of centerSpaceObj.
         for(Ship s : ships) {
             if (s != centerSpaceObj) {
                 s.x -= centerSpaceObj.dx;
@@ -231,13 +235,13 @@ public class LiveSystem {
             else if(hero.y > thisSystemHeight/2)
                 hero.y -= thisSystemHeight;
         }
-        
+
         centerSpaceObj.x = 0;
         centerSpaceObj.y = 0;
 
         for(Star s : stars) {
-            // change by movement divided by 3 so that stars move slowly and seem far away
-            // (Parallaxing!)
+            // Change by movement divided by 3 so that stars move slowly and
+            // seem far away. (Parallaxing!)
             s.x -= centerSpaceObj.dx / 3;
             s.y -= centerSpaceObj.dy / 3;
             if(s.x < -2000)
@@ -250,7 +254,7 @@ public class LiveSystem {
                 s.y -= 4000;
         }
         for(Dust s : dust) {
-            // have space dust move past at full speed
+            // Have space dust move past at full speed.
             s.x -= centerSpaceObj.dx;
             s.y -= centerSpaceObj.dy;
             if(s.x < -2000)
@@ -323,7 +327,7 @@ public class LiveSystem {
         Iterator<Ship> it = ships.iterator();
         while (it.hasNext()) {
             Ship s = it.next();
-      
+
             if(s.status == ShipStatus.DYING) {
                 --s.countDown;
                 if(s.countDown <= Ship.COUNTDOWN_END) {
@@ -352,9 +356,8 @@ public class LiveSystem {
             translateWithCenter(w, x, y);
         }
         translateWithCenter(hero, x, y);
-        // Should also translate dust and stars for a better effect.
-        // (Make it really feel like we are looking at a different
-        // part of space.)
+        // Should also translate dust and stars for a better effect. (Make it
+        // really feel like we are looking at a different part of space.)
     }
 
     public void translateWithCenter(SpaceObj s, double x, double y) {

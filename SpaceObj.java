@@ -8,16 +8,23 @@ import java.io.*;
 public abstract class SpaceObj {
     public int shipID;
     public String name;
-    public int structInteg; // structural integrity
-    public double angle; // current angle in radians (East is 0 or 2*PI)
+    // Structural integrity.
+    public int structInteg;
+    // Current angle in radians. (East is 0 or 2*PI.)
+    public double angle;
     public double x;
     public double y;
-    protected double dx; // This variable is protected because we need to check if the new assigned velocity is greater than maxVelocity
+    // This variable is protected because we need to check if the new assigned
+    // velocity is greater than maxVelocity.
+    protected double dx;
     protected double dy;
-    public double maxVelocity; // absolute maximum velocity
-    public double accelRate; // rate of acceleration; dv/dt
+    // Absolute maximum velocity.
+    public double maxVelocity;
+    // Rate of acceleration or dv/dt.
+    public double accelRate;
     public double turnRate;
-    public int isAccel; // is accelerating
+    // Is accelerating.
+    public int isAccel;
     public boolean isBoosting;
     public boolean turningLeft;
     public boolean turningRight;
@@ -37,9 +44,8 @@ public abstract class SpaceObj {
         return dy;
     }
     public void accelerate() {
-        // This is wrong. As it is, they can go faster to the NW/NE/SW/SE than they can in any other
-        //     direction. But I'm having trouble thinking of a way to do it and there are many other things
-        //     that need to get done!
+        // This is wrong. As it is, they can go faster to the NW/NE/SW/SE than
+        // they can in any other direction.
         double currentVelocity = Math.sqrt(dx*dx + dy*dy);
         double slowAccel = 1;
         if(currentVelocity < accelRate)
@@ -58,7 +64,7 @@ public abstract class SpaceObj {
             if((dx + dx2 <= maxVelocity && dx + dx2 >= -maxVelocity) ||
                 (dx2 < 0 && dx > 0) || (dx2 > 0 && dx < 0))
                 dx = dx + dx2;
-            if((dy + dy2 <= maxVelocity && dy + dy2 >= -maxVelocity) || 
+            if((dy + dy2 <= maxVelocity && dy + dy2 >= -maxVelocity) ||
                 (dy2 < 0 && dy > 0) || (dy2 > 0 && dy < 0))
                 dy = dy + dy2;
         }
@@ -70,11 +76,12 @@ public abstract class SpaceObj {
             // dy = dy2;
         // }
 
-    // the purpose of this part is to make it possible to come to a complete stop.
-    // The idea is, if the player achieves a VERY slow velocity by thrusting in the direction
-    //     opposite to their inertia, they must be trying to stop.
-    // Trouble is, if their ship's acceleration is slow enough, this might prevent them from moving
-    //     at all, or at least moving in certain directions, especially if they're at rest.
+    // The purpose of this part is to make it possible to come to a complete
+    // stop. The idea is, if the player achieves a VERY slow velocity by
+    // thrusting in the direction opposite to their inertia, they must be
+    // trying to stop. Trouble is, if their ship's acceleration is slow enough,
+    // this might prevent them from moving at all, or at least moving in
+    // certain directions, especially if they're at rest.
     currentVelocity = Math.sqrt(dx*dx + dy*dy);
     if(currentVelocity < accelRate / 10)
         dx = dy = 0;
@@ -92,11 +99,13 @@ public abstract class SpaceObj {
         double xDirection = 0;
         if(dx < 0)
             xDirection = Math.PI;
-        // if the ship is not motionless, which would screw up the angle calculation
+        // If the ship is not motionless, which would screw up the angle
+        // calculation, then...
         if(dx != 0 || dy != 0)
             angle = Math.atan(dy/dx) + xDirection;
         try {
-            origObjImg = ImageIO.read(getClass().getResource("ballofflame.png"));
+            origObjImg =
+              ImageIO.read(getClass().getResource("ballofflame.png"));
         } catch (IOException e) { e.printStackTrace(); }
     }
 }
