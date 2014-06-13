@@ -135,7 +135,7 @@ public class Game {
                 actP.repaint();
                 if(paintTime >= 16) {
                     paintTime = 0;
-                    if(physicsLS.enemiesRemain() == false || !physicsLS.hero.alive)
+                    if(physicsLS.enemiesRemain() == false || physicsLS.hero.status == ShipStatus.DEAD)
                         ++endLevelPauseCount;
                 }
                 try {
@@ -214,34 +214,26 @@ public class Game {
                 int yRot;
                 int frameX;
                 int frameY;
-                synchronized (ships) {
-                    Ship s;
-                    for(int i = 0; i < ships.size(); i++) {
-                        s = ships.get(i);
-                        origXform = g2d.getTransform();
-                        newXform = (AffineTransform)(origXform.clone());
-                        //center of rotation is position of object in the panel
-                        xRot = ((int) s.x) + panelWidth / 2;
-                        yRot = -((int) s.y) + panelHeight / 2;
-                        newXform.rotate(-s.angle, xRot, yRot);
-                        g2d.setTransform(newXform);
-                        //draw rotated image
-                        frameX = ((int) s.x) + panelWidth / 2 - s.getImage().getWidth(this)/2;
-                        frameY = -((int) s.y) + panelHeight / 2 - s.getImage().getHeight(this)/2;
-                        g2d.drawImage(s.getImage(), frameX, frameY, this);
-                        g2d.setTransform(origXform);
-                    }
+                for(Ship s : ships) {
+                    origXform = g2d.getTransform();
+                    newXform = (AffineTransform)(origXform.clone());
+                    //center of rotation is position of object in the panel
+                    xRot = ((int) s.x) + panelWidth / 2;
+                    yRot = -((int) s.y) + panelHeight / 2;
+                    newXform.rotate(-s.angle, xRot, yRot);
+                    g2d.setTransform(newXform);
+                    //draw rotated image
+                    frameX = ((int) s.x) + panelWidth / 2 - s.origObjImg.getWidth(this)/2;
+                    frameY = -((int) s.y) + panelHeight / 2 - s.origObjImg.getHeight(this)/2;
+                    g2d.drawImage(s.origObjImg, frameX, frameY, this);
+                    g2d.setTransform(origXform);
                 }
-                synchronized (projectiles) {
-                    Weapon s;
-                    for(int i = 0; i < projectiles.size(); i++) {
-                        s = projectiles.get(i);
-                        g2d.setColor(Color.yellow);
-                        g2d.fillOval((int) (s.x + panelWidth / 2 - s.diam / 2), (int) (-(s.y) + panelHeight / 2 - s.diam / 2), s.diam, s.diam);
-                    }
+                for(Weapon w : projectiles) {
+                    g2d.setColor(Color.yellow);
+                    g2d.fillOval((int) (w.x + panelWidth / 2 - w.diam / 2), (int) (-(w.y) + panelHeight / 2 - w.diam / 2), w.diam, w.diam);
                 }
 
-                if (hero.countDown != 1) {
+                if (hero.countDown > Ship.COUNTDOWN_END) {
                     origXform = g2d.getTransform();
                     newXform = (AffineTransform)(origXform.clone());
                     //center of rotation is center of the panel
@@ -250,9 +242,9 @@ public class Game {
                     newXform.rotate(-hero.angle, xRot, yRot);
                     g2d.setTransform(newXform);
                     //draw image centered in panel
-                    frameX = ((int) hero.x) + panelWidth / 2 - hero.getImage().getWidth(this)/2;
-                    frameY = -((int) hero.y) + panelHeight / 2 - hero.getImage().getHeight(this)/2;
-                    g2d.drawImage(hero.getImage(), frameX, frameY, this);
+                    frameX = ((int) hero.x) + panelWidth / 2 - hero.origObjImg.getWidth(this)/2;
+                    frameY = -((int) hero.y) + panelHeight / 2 - hero.origObjImg.getHeight(this)/2;
+                    g2d.drawImage(hero.origObjImg, frameX, frameY, this);
                     g2d.setTransform(origXform);
                 }
 
@@ -274,15 +266,13 @@ public class Game {
                 // least the parts of the calculations that don't depend on
                 // current position of the object.)
                 // / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / 
-                synchronized (ships) {
-                    for(int i = 0; i < ships.size(); i++) {
-                        // this if statement is extra for later
-                        // if(s.isHostile)
-                        g2d.setColor(Color.red);
-                        // else
-                        // g2d.setColor(Color.green);
-                        g2d.fillOval(((int) (ships.get(i).x * (double) mapWidth / (double) thisSystemWidth) + (mapWidth / 2) + panelWidth + mapBorder + 4) - 1, -((int) (ships.get(i).y * (double) mapWidth / (double) thisSystemHeight)) + (mapWidth / 2) + mapBorder - 1, 3, 3);
-                    }
+                for(Ship s : ships) {
+                    // this if statement is extra for later
+                    // if(s.isHostile)
+                    g2d.setColor(Color.red);
+                    // else
+                    // g2d.setColor(Color.green);
+                    g2d.fillOval(((int) (s.x * (double) mapWidth / (double) thisSystemWidth) + (mapWidth / 2) + panelWidth + mapBorder + 4) - 1, -((int) (s.y * (double) mapWidth / (double) thisSystemHeight)) + (mapWidth / 2) + mapBorder - 1, 3, 3);
                 }
                 g2d.setColor(Color.blue);
                 g2d.fillOval((int) (hero.x * (double) mapWidth / (double) thisSystemWidth) + (mapWidth / 2) + panelWidth + mapBorder + 4 - 1, -((int) (hero.y * (double) mapWidth / (double) thisSystemHeight)) + (mapWidth / 2) + mapBorder - 1, 3, 3);
@@ -307,7 +297,7 @@ public class Game {
                 int keyCode = e.getKeyCode();
                 synchronized (LiveSystemCopyMutex) {  
                     PlayerShip hero = physicsLS.hero;
-                    if (hero.alive) {
+                    if (hero.status == ShipStatus.ALIVE) {
                         if(keyCode == KeyEvent.VK_LEFT) {
                             hero.turningLeft = true;
                         } else if(keyCode == KeyEvent.VK_RIGHT) {
@@ -343,7 +333,7 @@ public class Game {
                 int keyCode = e.getKeyCode();
                 synchronized (LiveSystemCopyMutex) {  
                     PlayerShip hero = physicsLS.hero;
-                    if (hero.alive) {
+                    if (hero.status == ShipStatus.ALIVE) {
                         if (keyCode == KeyEvent.VK_UP) {
                             hero.playerIsAccel = false;
                         } else if (keyCode == KeyEvent.VK_Z) {

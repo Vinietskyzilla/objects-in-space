@@ -4,9 +4,9 @@ import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 public class Fighter extends Ship {
     protected Fighter() {}
-    public Fighter(int X, int Y, int sID) {
+    public Fighter(int X, int Y, int sID, int mv) {
         // pass maxVelocity to SpaceObj
-        super(sID / 3);
+        super(mv);
 
         name = "Fighter";
         shipID = sID;

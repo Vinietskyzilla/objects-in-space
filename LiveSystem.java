@@ -33,7 +33,7 @@ public class LiveSystem {
         projectiles = new LinkedList<Weapon>();
         stars = new ArrayList<Star>();
         dust = new ArrayList<Dust>();
-        
+
         spawnShips(level);
         populateStars(stars);
         populateDust(dust);
@@ -78,37 +78,14 @@ public class LiveSystem {
     }
 
     private void spawnShips(int level) {
-        Fighter f;
-        f = new Fighter((int)(Math.random() * 4000)-2000, (int)(Math.random() * 4000)-2000, getNextShipID());
-        f.maxVelocity = (f.shipID + level) / 3;
-        ships.add(f);
-        f = new Fighter((int)(Math.random() * 4000)-2000, (int)(Math.random() * 4000)-2000, getNextShipID());
-        f.maxVelocity = (f.shipID + level) / 3;
-        ships.add(f);
-        f = new Fighter((int)(Math.random() * 4000)-2000, (int)(Math.random() * 4000)-2000, getNextShipID());
-        f.maxVelocity = (f.shipID + level) / 3;
-        ships.add(f);
-        f = new Fighter((int)(Math.random() * 4000)-2000, (int)(Math.random() * 4000)-2000, getNextShipID());
-        f.maxVelocity = (f.shipID + level) / 3;
-        ships.add(f);
-        f = new Fighter((int)(Math.random() * 4000)-2000, (int)(Math.random() * 4000)-2000, getNextShipID());
-        f.maxVelocity = (f.shipID + level) / 3;
-        ships.add(f);
-        f = new Fighter((int)(Math.random() * 4000)-2000, (int)(Math.random() * 4000)-2000, getNextShipID());
-        f.maxVelocity = (f.shipID + level) / 3;
-        ships.add(f);
-        f = new Fighter((int)(Math.random() * 4000)-2000, (int)(Math.random() * 4000)-2000, getNextShipID());
-        f.maxVelocity = (f.shipID + level) / 3;
-        ships.add(f);
-        f = new Fighter((int)(Math.random() * 4000)-2000, (int)(Math.random() * 4000)-2000, getNextShipID());
-        f.maxVelocity = (f.shipID + level) / 3;
-        ships.add(f);
-        f = new Fighter((int)(Math.random() * 4000)-2000, (int)(Math.random() * 4000)-2000, getNextShipID());
-        f.maxVelocity = (f.shipID + level) / 3;
-        ships.add(f);
-        f = new Fighter((int)(Math.random() * 4000)-2000, (int)(Math.random() * 4000)-2000, getNextShipID());
-        f.maxVelocity = (f.shipID + level) / 3;
-        ships.add(f);
+        for (int i = 0; i < 3; i++) {
+            ships.add(new Fighter(
+                (int)(Math.random() * 1000 * level) - 500 * level,
+                (int)(Math.random() * 1000 * level) - 500 * level,
+                getNextShipID(),
+                (level+1)/3
+            ));
+        }
     }
 
     public int getNextShipID() {
@@ -298,7 +275,7 @@ public class LiveSystem {
 
     public void checkCollisions() {
         for(Ship s : ships) {
-            if(s.alive) {
+            if(s.status == ShipStatus.ALIVE) {
                 Iterator<Weapon> it = projectiles.iterator();
                 while (it.hasNext()) {
                     Weapon w = it.next();
@@ -310,8 +287,7 @@ public class LiveSystem {
                         if(hit) {
                             s.structInteg -= w.damage;
                             if(s.structInteg <= 0) {
-                                s.countDown = 170;
-                                s.alive = false;
+                                s.status = ShipStatus.DYING;
                                 s.die();
                             }
                             it.remove();
@@ -321,7 +297,7 @@ public class LiveSystem {
             }
         }
         Ship s = hero;
-        if (hero.alive) {
+        if (hero.status == ShipStatus.ALIVE) {
             Iterator<Weapon> it = projectiles.iterator();
             while (it.hasNext()) {
                 Weapon w = it.next();
@@ -333,10 +309,8 @@ public class LiveSystem {
                     if(hit) {
                         s.structInteg -= w.damage;
                         if(s.structInteg <= 0) {
-                            s.countDown = 170;
-                            s.alive = false;
+                            s.status = ShipStatus.DYING;
                             s.die();
-                            ships.add(hero);
                         }
                         it.remove();
                     }
@@ -346,31 +320,36 @@ public class LiveSystem {
     }
 
     public void kill() {
-        Ship s;
-        for(int i = 0; i < ships.size(); i++) {
-            s = ships.get(i);
-            if(s.countDown > 0) {
+        Iterator<Ship> it = ships.iterator();
+        while (it.hasNext()) {
+            Ship s = it.next();
+      
+            if(s.status == ShipStatus.DYING) {
                 --s.countDown;
+                if(s.countDown <= Ship.COUNTDOWN_END) {
+                    s.status = ShipStatus.DEAD;
+                    it.remove();
+                }
             }
-            if(s.countDown == 1) {
-                ships.remove(s);
-                --i;
+        }
+        if(hero.status == ShipStatus.DYING) {
+            --hero.countDown;
+            if(hero.countDown <= Ship.COUNTDOWN_END) {
+                hero.status = ShipStatus.DEAD;
             }
         }
     }
 
-    public void makeCenter(SpaceObj s) {
-        centerSpaceObj = s;
+    public void makeCenter(SpaceObj newCenter) {
+        centerSpaceObj = newCenter;
 
-        double x = s.x, y = s.y;
+        double x = newCenter.x, y = newCenter.y;
 
-        int shipsSize = ships.size();
-        for (int i = 0; i < ships.size(); i++) {
-            translateWithCenter(ships.get(i), x, y);
+        for (Ship s : ships) {
+            translateWithCenter(s, x, y);
         }
-        int projectilesSize = projectiles.size();
-        for (int i = 0; i < projectiles.size(); i++) {
-            translateWithCenter(projectiles.get(i), x, y);
+        for (Weapon w : projectiles) {
+            translateWithCenter(w, x, y);
         }
         translateWithCenter(hero, x, y);
         // Should also translate dust and stars for a better effect.

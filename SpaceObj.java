@@ -6,12 +6,12 @@ import java.awt.event.*;
 import javax.imageio.ImageIO;
 import java.io.*;
 public abstract class SpaceObj {
-    public boolean alive;
     public int shipID;
+    public String name;
+    public int structInteg; // structural integrity
     public double angle; // current angle in radians (East is 0 or 2*PI)
     public double x;
     public double y;
-    //public Position gamePos;
     protected double dx; // This variable is protected because we need to check if the new assigned velocity is greater than maxVelocity
     protected double dy;
     public double maxVelocity; // absolute maximum velocity
@@ -22,18 +22,13 @@ public abstract class SpaceObj {
     public boolean turningLeft;
     public boolean turningRight;
     public int firing;
-    protected String name;
-    protected BufferedImage origObjImg;
+    public BufferedImage origObjImg;
     public int diam;
-    public int structInteg; // structural integrity
-    public int countDown;
 
     protected SpaceObj() {}
     public SpaceObj(double mv) {
         maxVelocity = mv;
         isBoosting = false;
-        alive = true;
-        countDown = 0;
     }
     public double getdx() {
         return dx;
@@ -88,9 +83,6 @@ public abstract class SpaceObj {
         if(origObjImg.getHeight() != origObjImg.getWidth()) {
             System.out.println(name + "'s image is not square");
         }
-    }
-    public BufferedImage getImage() {
-        return origObjImg;
     }
     public void die() {
         isAccel = 0;
