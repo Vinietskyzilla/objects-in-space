@@ -13,7 +13,9 @@ public class Fighter extends Ship {
         mass = 4;
 
         weapons.add(BulletGun.newDefaultWeapon(this));
-        structInteg = 50;
+
+        maxStructInteg = 50;
+        structInteg = maxStructInteg;
 
         angle = Math.random()*2*Math.PI - Math.PI;
         x = X;

@@ -340,11 +340,15 @@ public class Game {
                     -((int) (hero.y * (double) mapWidth / (double) thisSystemHeight)) + (mapWidth / 2) + mapMargin - 1,
                     3, 3);
                 // Paint rectangle around visible field on minimap.
-                g2d.setColor(new Color(0xFF00C000));
-                g2d.drawRect((int) ((-panelWidth / 2) * (double) mapWidth / (double) thisSystemWidth) + (mapWidth / 2) + panelWidth + mapMargin + hudDividerWidth,
-                    -((int) ((panelHeight / 2) * (double) mapWidth / (double) thisSystemHeight)) + (mapWidth / 2) + mapMargin,
-                    (int) (panelWidth * (double) mapWidth / (double) thisSystemWidth),
-                    (int) (panelHeight * (double) mapWidth / (double) thisSystemHeight));
+                g2d.setColor(new Color(0x00C000));
+                g2d.drawRect((int) ((-panelWidth / 2) * (double) mapWidth / (double) thisSystemWidth) + (mapWidth / 2) + panelWidth + mapMargin + hudDividerWidth, -((int) ((panelHeight / 2) * (double) mapWidth / (double) thisSystemHeight)) + (mapWidth / 2) + mapMargin, (int) (panelWidth * (double) mapWidth / (double) thisSystemWidth), (int) (panelHeight * (double) mapWidth / (double) thisSystemHeight));
+
+                // Paint health bar.
+                g2d.setColor(new Color(0x3D75B8));
+                g2d.fillRect(panelWidth + hudDividerWidth + mapMargin - 1,
+                    mapMargin + mapWidth + 5,
+                    (mapWidth + 3) * hero.structInteg / hero.maxStructInteg,
+                    20); 
             }
         }
 

@@ -9,6 +9,7 @@ public abstract class SpaceObj {
     public int shipID;
     // Structural integrity.
     public int structInteg;
+    public int maxStructInteg;
     // Current angle in radians.
     // East is 0, west is -pi. Pi is outside the range of directions.
     public double angle;

@@ -2,7 +2,6 @@ import java.io.*;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 public class PlayerShip extends Ship {
-    int structIntegInit;
     boolean playerIsAccel;
     protected PlayerShip() {}
     public PlayerShip(int X, int Y, int sID) {
@@ -13,8 +12,8 @@ public class PlayerShip extends Ship {
 
         mass = 4;
 
-        structIntegInit = 150;
-        structInteg = structIntegInit;
+        maxStructInteg = 150;
+        structInteg = maxStructInteg;
 
         // Hilarious.
         //int numGuns = 300;
@@ -26,7 +25,6 @@ public class PlayerShip extends Ship {
         //w.setTTL(w.getTTL() * 10);
         //w.setReloadTime(w.getReloadTime() / numGuns);
         weapons.add(w);
-
 
         shipID = sID;
 
