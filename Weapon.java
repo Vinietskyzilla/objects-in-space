@@ -1,7 +1,7 @@
 public abstract class Weapon {
 
     public int reloadTime;
-    protected int reloadProgress;
+    public int reloadProgress;
     public double ammo;
     public boolean isTurret;
     public SpaceObj owner;

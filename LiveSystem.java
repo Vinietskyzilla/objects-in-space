@@ -351,7 +351,7 @@ public class LiveSystem {
 
     public void ai() {
 
-        for (Ship s : ships) {
+        for (Ship s : ships) { if (s.status == ShipStatus.ALIVE) {
 
             // Follow the player's ship.
 
@@ -398,8 +398,7 @@ public class LiveSystem {
                 s.firing = true;
             else
                 s.firing = false;
-        }
-
+        }}
     }
 
     public void makeCenter(SpaceObj newCenter) {

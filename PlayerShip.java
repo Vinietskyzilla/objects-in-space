@@ -12,12 +12,22 @@ public class PlayerShip extends Ship {
         baseAccelRate = .2;
 
         mass = 4;
-        
+
         structIntegInit = 150;
         structInteg = structIntegInit;
-       
-        weapons.add(BulletGun.newDefaultWeapon(this));
-        
+
+        // Hilarious.
+        //int numGuns = 300;
+        int numGuns = 1;
+
+        Weapon w = BulletGun.newDefaultWeapon(this);
+        // Hilarious.
+        //w.velocity *= 2;
+        //w.ttl *= 10;
+        w.reloadTime /= numGuns;
+        weapons.add(w);
+
+
         shipID = sID;
 
         angle = .5*Math.PI;
