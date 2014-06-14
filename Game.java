@@ -52,6 +52,7 @@ public class Game {
     // Initializes frame and panel dimensions and starts the game by running
     // the UpdatePanel up.
     public Game() {
+        // http://stackoverflow.com/questions/1984071/how-to-hide-cursor-in-a-swing-application
         BufferedImage cursorImg =
             new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
         blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorImg,
@@ -106,7 +107,20 @@ public class Game {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setResizable(false);
         frame.setVisible(true);
+
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new ExitKeyEventDispatcher());
     }
+
+    public class ExitKeyEventDispatcher implements KeyEventDispatcher {
+        public boolean dispatchKeyEvent(KeyEvent e) {
+            if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                System.exit(0);
+                e.consume();
+            }
+            return false;
+        }
+    }
+
     // Contains the run method that executes the game. Created in a new thread
     // by up's button listener.
     public class Play implements Runnable {
@@ -195,8 +209,7 @@ public class Game {
 
         public ActionPanel() {
             level = 1;
-            myKeyListener mkl = new myKeyListener();
-            this.addKeyListener(mkl);
+            this.addKeyListener(new MyKeyListener());
             this.setFocusable(true);
         }
 
@@ -321,7 +334,7 @@ public class Game {
             frame.getContentPane().repaint();
         }
 
-        public class myKeyListener extends KeyAdapter {
+        public class MyKeyListener extends KeyAdapter {
             public void keyPressed(KeyEvent e) {
                 int keyCode = e.getKeyCode();
                 synchronized (LiveSystemCopyMutex) {
@@ -352,8 +365,6 @@ public class Game {
                         }
                     }
                 }
-                if (keyCode == KeyEvent.VK_ESCAPE)
-                    System.exit(0);
 
                 e.consume();
             }
