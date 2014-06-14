@@ -12,8 +12,16 @@ Read [JAR_COMMAND.txt](https://github.com/Vinietskyzilla/objects-in-space/blob/m
 
 | Action        | Key                  |
 | ------------- | -------------------- |
-| Turn          | Left and right arrow | 
+| Turn          | Left and right arrow |
 | Accelerate    | Up arrow             |
 | Afterburner   | Z                    |
 | Fire          | Space bar            |
-| Recenter view | M                    |   
+| Recenter view | M                    |
+
+## Help
+
+Question? Email david dot winiecki at gmail dot com.
+
+## Github
+
+This project lives at https://github.com/Vinietskyzilla/objects-in-space.
