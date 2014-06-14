@@ -2,14 +2,15 @@
 // By David Winiecki
 
 import java.awt.*;
-import javax.swing.*;
-import java.util.*;
-import java.util.List;
 import java.awt.event.*;
-import java.io.*;
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.awt.geom.AffineTransform;
+import java.io.*;
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.border.*;
+import java.util.*;
+import java.util.List;
 
 // Contains the frame, all panels, and all non-SpaceObj classes.
 public class Game {
@@ -52,6 +53,9 @@ public class Game {
     // Initializes frame and panel dimensions and starts the game by running
     // the UpdatePanel up.
     public Game() {
+
+        level = 1;
+
         // http://stackoverflow.com/questions/1984071/how-to-hide-cursor-in-a-swing-application
         BufferedImage cursorImg =
             new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
@@ -182,12 +186,22 @@ public class Game {
     public class UpdatePanel extends JPanel {
 
         private JButton buttonStartLevel;
+        private JLabel levelLabel;
+        private JPanel innerPanel;
 
         public UpdatePanel() {
             this.setMinimumSize(new Dimension(panelWidth, panelHeight));
-            buttonStartLevel = new JButton("Start next level");
+            innerPanel = new JPanel();
+            innerPanel.setLayout(new BoxLayout(innerPanel, BoxLayout.Y_AXIS));
+            innerPanel.setBorder(new EmptyBorder(panelHeight / 3, 0, 0, 0));
+            this.add(innerPanel);
+            levelLabel = new JLabel("Level " + level);
+            levelLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            innerPanel.add(levelLabel);
+            buttonStartLevel = new JButton("LAUNCH");
+            buttonStartLevel.setAlignmentX(Component.CENTER_ALIGNMENT);
             buttonStartLevel.addActionListener(new StartLevelListener());
-            this.add(buttonStartLevel);
+            innerPanel.add(buttonStartLevel);
         }
 
         protected class StartLevelListener implements ActionListener {
@@ -199,7 +213,15 @@ public class Game {
             }
         }
 
-        public void resetFocus() {
+        public void resetAfterLevel() {
+            levelLabel.setText("Level " + level);
+            if (level == 2) {
+                JLabel msg =
+                    new JLabel("The enemies in the next system are faster and their numbers are greater. Your weapons have been upgraded.");
+                msg.setAlignmentX(Component.CENTER_ALIGNMENT);
+                innerPanel.add(msg);
+            }
+
             frame.getContentPane().setCursor(Cursor.getDefaultCursor());
             buttonStartLevel.requestFocus();
         }
@@ -208,7 +230,6 @@ public class Game {
     public class ActionPanel extends JPanel {
 
         public ActionPanel() {
-            level = 1;
             this.addKeyListener(new MyKeyListener());
             this.setFocusable(true);
         }
@@ -296,13 +317,9 @@ public class Game {
 
                 // Paint minimap.
                 g2d.setColor(Color.red);
-                g2d.drawRect(panelWidth + hudDividerWidth + mapMargin - 1, mapMargin - 1,
-                    mapWidth + 2, mapWidth + 2);
+                g2d.drawRect(panelWidth + hudDividerWidth + mapMargin - 1,
+                    mapMargin - 1, mapWidth + 2, mapWidth + 2);
 
-                // All these large calculations should be stored in variables
-                // before each new level begins to save some computations. (At
-                // least the parts of the calculations that don't depend on
-                // current position of the object.)
                 for (Ship s : ships) {
                     // This if statement is extra for later.
                     // if (s.isHostile)
@@ -328,8 +345,8 @@ public class Game {
 
         public void nextPanel() {
             frame.getContentPane().remove(this);
-            frame.getContentPane().add(BorderLayout.CENTER, up);
-            up.resetFocus();
+            frame.getContentPane().add(up);
+            up.resetAfterLevel();
             frame.getContentPane().validate();
             frame.getContentPane().repaint();
         }

@@ -18,13 +18,13 @@ public class PlayerShip extends Ship {
 
         // Hilarious.
         //int numGuns = 300;
-        int numGuns = 1;
+        //int numGuns = 1;
 
         Weapon w = BulletGun.newDefaultWeapon(this);
         // Hilarious.
-        //w.velocity *= 2;
-        //w.ttl *= 10;
-        w.reloadTime /= numGuns;
+        //w.setVelocity(w.getVelocity() * 2);
+        //w.setTTL(w.getTTL() * 10);
+        //w.setReloadTime(w.getReloadTime() / numGuns);
         weapons.add(w);
 
 

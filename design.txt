@@ -4,8 +4,10 @@ Weapon
 - MissileLauncher
 - DecoyLauncher
 - MineLayer
-- ProjectorSBeam
+- ProjectorStBeam
 - ProjectorCBeam
+- ProjectorSpBeam
+- ProjectorRBeam
 - Exploder
 
 SpaceObj
@@ -21,6 +23,8 @@ SpaceObj
   - Beam
     - BeamStraight
     - BeamCurved
+    - BeamSpread
+      - BeamRepair
   - Explosion
 
 Missile and Mine create an Explosion when in proximity of target or expiring.
@@ -30,3 +34,7 @@ Bullet and Explosion have optional image, optional color.
 Particular instances of Decoy include a list of weapons attracted by the instance.
 
 BeamCurved may be a little too ambitious. Anything in contact with the curve must receive damage.
+
+It may be better to not have Beam objects and simply check when the weapon is firing if it is hitting anything. (Instead of having a Beam object and a ProjectorBeam weapon object, just use a ProjectorBeam object.)
+
+BeamRepair is simply a Beam weapon with negative damage. Will need to make sure structInteg of repaired ships does not go above their max structInteg.

@@ -44,6 +44,11 @@ public class LiveSystem {
         stars = new ArrayList<Star>();
         dust = new ArrayList<Dust>();
 
+        Weapon w = hero.weapons.get(0);
+        w.setReloadTime(w.getReloadTime() - 5*level);
+        w.setVelocity(w.getVelocity() + level/2);
+        w.setTTL(w.getTTL() + level/2);
+
         spawnShips(level);
         populateStars(stars);
         populateDust(dust);
@@ -94,7 +99,7 @@ public class LiveSystem {
 
     private void spawnShips(int level) {
 
-        int fighterCount = level + 2;
+        int fighterCount = level*level + 1;
 
         for (int i = 0; i < fighterCount; i++) {
             ships.add(new Fighter(
@@ -103,7 +108,7 @@ public class LiveSystem {
                   (int)(Math.random() * 1000 * fighterCount)
                   - 500 * fighterCount,
                   getNextShipID(),
-                  1));//level/4.0));
+                  level/3.0));
         }
     }
 
@@ -141,7 +146,7 @@ public class LiveSystem {
 
         // Modify rotation.
         if (hero.status == ShipStatus.ALIVE) {
-        
+
             // East is 0, west is -pi. Pi is outside the range of directions.
             if (hero.turningLeft) {
                 hero.angle += hero.turnRate;
@@ -361,7 +366,7 @@ public class LiveSystem {
             double theta = Math.atan(dy/dx);
 
             // East is 0, west is -pi. Pi is outside the range of directions.
-            
+
             if (dx < 0 && theta < 0) {
                 theta += Math.PI;
             } else if (dx < 0 && theta >= 0) {

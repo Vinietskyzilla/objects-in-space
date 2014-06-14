@@ -1,19 +1,19 @@
 public class BulletGun extends Weapon {
     
-    protected BulletGun() {}
+    private BulletGun() {}
 
     public BulletGun(SpaceObj owner, int reloadTime, double ammo,
         double velocity, int ttl, int damage, double mass,
         boolean friendlyFire, boolean isTurret) {
         
         this.owner = owner;
-        this.ammo = ammo;
-        this.reloadTime = reloadTime;
-        reloadProgress = reloadTime;
-        this.velocity = velocity;
-        this.ttl = ttl;
+        setAmmo(ammo);
+        setReloadTime(reloadTime);
+        reloadProgress = getReloadTime();
+        setVelocity(velocity);
+        setTTL(ttl);
         this.damage = damage;
-        this.mass = mass;
+        setMass(mass);
         this.friendlyFire = friendlyFire;
         this.isTurret = isTurret;
     }
@@ -24,11 +24,11 @@ public class BulletGun extends Weapon {
 
     public Projectile generate() {
         ++reloadProgress;
-        if (owner.firing && reloadProgress > reloadTime) {
+        if (owner.firing && reloadProgress > getReloadTime()) {
             reloadProgress = 0;
             return new Bullet(owner.x, owner.y, owner.dx, owner.dy,
-                owner.angle, owner.shipID, velocity, ttl, damage, mass,
-                friendlyFire);
+                owner.angle, owner.shipID, getVelocity(), getTTL(),
+                damage, getMass(), friendlyFire);
         }
         return new ProjectileBlank();
     }
