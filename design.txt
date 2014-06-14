@@ -8,8 +8,6 @@ Weapon
 - ProjectorCBeam
 - Exploder
 
-Weapon has bool isTurret.
-
 SpaceObj
 - Ship
   - ShipPlayer
@@ -29,9 +27,6 @@ Missile and Mine create an Explosion when in proximity of target or expiring.
 
 Bullet and Explosion have optional image, optional color.
 
-Particular instances of Decoy include a list of applicable weapon names.
+Particular instances of Decoy include a list of weapons attracted by the instance.
 
 BeamCurved may be a little too ambitious. Anything in contact with the curve must receive damage.
-
-interface ProjectileGuided
-- Torpedo

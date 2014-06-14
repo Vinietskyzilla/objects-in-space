@@ -1,8 +1,5 @@
-//
-//    Objects in Space
-//
-//    By David Winiecki
-//
+// Objects in Space
+// By David Winiecki
 
 import java.awt.*;
 import javax.swing.*;
@@ -24,11 +21,12 @@ public class Game {
     int panelHeight;
     // Width of the side menu during game play.
     int sideMenuWidth;
+    int hudDividerWidth;
 
     // Map dimension stuff.
 
     // Distance between the minimap and the sides of the frame.
-    int mapBorder;
+    int mapMargin;
     // Width of the minimap. Also used for height of the minimap.
     int mapWidth;
 
@@ -53,57 +51,55 @@ public class Game {
     // Initializes frame and panel dimensions and starts the game by running
     // the UpdatePanel up.
     public Game() {
-        int horizantalWindowBorderOffset = 6;
-        int headerWindowBorderOffset = 28;
-        frame = new JFrame();
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-        // The grey dividing bar cuts out 4 of these pixels.
+
+        // The gray dividing bar cuts out some of these pixels.
         sideMenuWidth = 300;
         mapWidth = 200;
-        mapBorder = (sideMenuWidth - 4 - mapWidth) / 2;
+        hudDividerWidth = 4;
+        mapMargin = (sideMenuWidth - hudDividerWidth - mapWidth) / 2;
 
-        // Full screen.
-        panelWidth = dim.width - sideMenuWidth;
-        panelHeight = dim.height;
+        frame = new JFrame();
 
-        // Set dimensions manually.
+        Toolkit tk = Toolkit.getDefaultToolkit();
+        Dimension screenSize = tk.getScreenSize();
+        Insets screenInsets =
+            tk.getScreenInsets(frame.getGraphicsConfiguration());
+        int x = screenInsets.left,
+            y = screenInsets.top,
+            width = screenSize.width - screenInsets.left - screenInsets.right,
+            height = screenSize.height - screenInsets.top
+                - screenInsets.bottom;
+        frame.setBounds(x, y, width, height);
 
-        // Don't set height or width greater than the smallest screen size you
-        // expect will use this.
-        // panelWidth = 1200;
-        // panelHeight = 700;
+        HierarchyListener hierarchyListener = new HierarchyListener() {
+            public void hierarchyChanged(HierarchyEvent e) {
+                long flags = e.getChangeFlags();
+                if ((flags & HierarchyEvent.SHOWING_CHANGED)
+                    == HierarchyEvent.SHOWING_CHANGED) {
 
-        // Nearly full screen.
-        // panelWidth = dim.width - horizantalWindowBorderOffset;
-        // panelHeight = dim.height - headerWindowBorderOffset;
+                    Insets frameInsets = frame.getInsets();
+                    panelWidth = frame.getWidth() - frameInsets.left
+                        - frameInsets.right - sideMenuWidth;
+                    panelHeight = frame.getHeight() - frameInsets.top
+                        - frameInsets.bottom;
 
-        // Big auto square.
-        //panelWidth = panelHeight = Math.min(dim.width, dim.height) - 100;
+                    up = new UpdatePanel();
+                    up.setBounds(0, 0, panelWidth + sideMenuWidth,
+                        panelHeight);
+                    actP = new ActionPanel();
+                    actP.setBounds(0, 0, panelWidth + sideMenuWidth,
+                        panelHeight);
 
-        int windowX = (dim.width / 2) - ((panelWidth + sideMenuWidth) / 2)
-          - (horizantalWindowBorderOffset / 2);
-        int windowY = (dim.height / 2) - (panelHeight / 2)
-          - (headerWindowBorderOffset - 3);
+                    frame.getContentPane().add(up);
+                    frame.validate();
+                    frame.removeHierarchyListener(this);
+                }
+            }
+        };
+        frame.addHierarchyListener(hierarchyListener);
 
-        // Ensure the window header bar is visible.
-        // NOT COMPATIBLE with the above full screen option.
-        // if (windowX < 0)
-        //     windowX = 0;
-        // if (windowY < 0)
-        //     windowY = 0;
-
-        frame.setLayout(null);
-        frame.setBounds(windowX,
-            windowY,
-            panelWidth + sideMenuWidth + horizantalWindowBorderOffset,
-            panelHeight + headerWindowBorderOffset);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setResizable(false);
-        up = new UpdatePanel();
-        up.setBounds(0, 0, panelWidth + sideMenuWidth, panelHeight);
-        actP = new ActionPanel();
-        actP.setBounds(0, 0, panelWidth + sideMenuWidth, panelHeight);
-        frame.getContentPane().add(up);
         frame.setVisible(true);
     }
     // Contains the run method that executes the game. Created in a new thread
@@ -270,11 +266,11 @@ public class Game {
                 g2d.setColor(Color.black);
                 g2d.fillRect(panelWidth, 0, sideMenuWidth, panelHeight);
                 g2d.setColor(new Color(0xFF808080));
-                g2d.fillRect(panelWidth, 0, 4, panelHeight);
+                g2d.fillRect(panelWidth, 0, hudDividerWidth, panelHeight);
 
                 // Paint minimap.
                 g2d.setColor(Color.red);
-                g2d.drawRect(panelWidth + 4 + mapBorder - 1, mapBorder - 1,
+                g2d.drawRect(panelWidth + hudDividerWidth + mapMargin - 1, mapMargin - 1,
                     mapWidth + 2, mapWidth + 2);
 
                 // All these large calculations should be stored in variables
@@ -287,18 +283,18 @@ public class Game {
                     g2d.setColor(Color.red);
                     // else
                     // g2d.setColor(Color.green);
-                    g2d.fillOval(((int) (s.x * (double) mapWidth / (double) thisSystemWidth) + (mapWidth / 2) + panelWidth + mapBorder + 4) - 1,
-                        -((int) (s.y * (double) mapWidth / (double) thisSystemHeight)) + (mapWidth / 2) + mapBorder - 1,
+                    g2d.fillOval(((int) (s.x * (double) mapWidth / (double) thisSystemWidth) + (mapWidth / 2) + panelWidth + mapMargin + hudDividerWidth) - 1,
+                        -((int) (s.y * (double) mapWidth / (double) thisSystemHeight)) + (mapWidth / 2) + mapMargin - 1,
                         3, 3);
                 }
                 g2d.setColor(Color.blue);
-                g2d.fillOval((int) (hero.x * (double) mapWidth / (double) thisSystemWidth) + (mapWidth / 2) + panelWidth + mapBorder + 4 - 1,
-                    -((int) (hero.y * (double) mapWidth / (double) thisSystemHeight)) + (mapWidth / 2) + mapBorder - 1,
+                g2d.fillOval((int) (hero.x * (double) mapWidth / (double) thisSystemWidth) + (mapWidth / 2) + panelWidth + mapMargin + hudDividerWidth - 1,
+                    -((int) (hero.y * (double) mapWidth / (double) thisSystemHeight)) + (mapWidth / 2) + mapMargin - 1,
                     3, 3);
                 // Paint rectangle around visible field on minimap.
                 g2d.setColor(new Color(0xFF00C000));
-                g2d.drawRect((int) ((-panelWidth / 2) * (double) mapWidth / (double) thisSystemWidth) + (mapWidth / 2) + panelWidth + mapBorder + 4,
-                    -((int) ((panelHeight / 2) * (double) mapWidth / (double) thisSystemHeight)) + (mapWidth / 2) + mapBorder,
+                g2d.drawRect((int) ((-panelWidth / 2) * (double) mapWidth / (double) thisSystemWidth) + (mapWidth / 2) + panelWidth + mapMargin + hudDividerWidth,
+                    -((int) ((panelHeight / 2) * (double) mapWidth / (double) thisSystemHeight)) + (mapWidth / 2) + mapMargin,
                     (int) (panelWidth * (double) mapWidth / (double) thisSystemWidth),
                     (int) (panelHeight * (double) mapWidth / (double) thisSystemHeight));
             }
