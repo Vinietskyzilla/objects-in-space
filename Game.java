@@ -15,6 +15,7 @@ import java.awt.geom.AffineTransform;
 public class Game {
     // Window frame.
     JFrame frame;
+    Cursor blankCursor;
     // Desired width for the square in which you fly.
     int panelWidth;
     // Desired height for the square in which you fly.
@@ -51,6 +52,10 @@ public class Game {
     // Initializes frame and panel dimensions and starts the game by running
     // the UpdatePanel up.
     public Game() {
+        BufferedImage cursorImg =
+            new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+        blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorImg,
+            new Point(0, 0), "blank cursor");
 
         // The gray dividing bar cuts out some of these pixels.
         sideMenuWidth = 300;
@@ -176,10 +181,12 @@ public class Game {
                 frame.getContentPane().remove(up);
                 frame.repaint();
                 new Thread(new Play()).start();
+                frame.getContentPane().setCursor(blankCursor);
             }
         }
 
         public void resetFocus() {
+            frame.getContentPane().setCursor(Cursor.getDefaultCursor());
             buttonStartLevel.requestFocus();
         }
     }
