@@ -162,9 +162,11 @@ public class Game {
 
     public class UpdatePanel extends JPanel {
 
+        private JButton buttonStartLevel;
+
         public UpdatePanel() {
             this.setMinimumSize(new Dimension(panelWidth, panelHeight));
-            JButton buttonStartLevel = new JButton("Start next level");
+            buttonStartLevel = new JButton("Start next level");
             buttonStartLevel.addActionListener(new StartLevelListener());
             this.add(buttonStartLevel);
         }
@@ -175,6 +177,10 @@ public class Game {
                 frame.repaint();
                 new Thread(new Play()).start();
             }
+        }
+
+        public void resetFocus() {
+            buttonStartLevel.requestFocus();
         }
     }
 
@@ -303,6 +309,7 @@ public class Game {
         public void nextPanel() {
             frame.getContentPane().remove(this);
             frame.getContentPane().add(BorderLayout.CENTER, up);
+            up.resetFocus();
             frame.getContentPane().validate();
             frame.getContentPane().repaint();
         }
