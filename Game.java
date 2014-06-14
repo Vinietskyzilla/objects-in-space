@@ -198,7 +198,7 @@ public class Game {
         private JLabel levelLabel;
         private JPanel innerPanel;
         private JLabel nextSystemMsg;
-        private JTextField levelCheatTF;
+        private CheatTextField levelCheatTF;
 
         public UpdatePanel() {
 
@@ -230,8 +230,7 @@ public class Game {
                 new JLabel("Enter a number to jump to a level");
             cheatPanel.add(cheatLabel);
             cheatPanel.add(BorderLayout.SOUTH, cheatLabel);
-            levelCheatTF = new JTextField(10);
-            addLevelCheatListener(levelCheatTF);
+            levelCheatTF = new CheatTextField(10);
             cheatPanel.add(levelCheatTF);
             cheatPanel.add(BorderLayout.SOUTH, levelCheatTF);
 
@@ -259,37 +258,43 @@ public class Game {
             buttonStartLevel.requestFocus();
         }
 
-        public void addLevelCheatListener(JTextField tf) {
-            tf.getDocument().addDocumentListener(
-                new DocumentListener() {
-                public void changedUpdate(DocumentEvent e) { }
-                public void removeUpdate(DocumentEvent e) {
-                    try {
-                        int newLevel =
-                            Integer.parseInt(tf.getText());
-                        if (newLevel < 1)
-                            newLevel = 1;
-                        // Considering how many ships are created just at
-                        // level 40, going to level 1000 for example could
-                        // easily crash a machine that doesn't handle huge
-                        // resource allocation requests well.
-                        if (newLevel > 100)
-                            newLevel = 100;
-                        level = newLevel;
-                    } catch (NumberFormatException ex) { }
-                }
-                public void insertUpdate(DocumentEvent e) {
-                    try {
-                        int newLevel =
-                            Integer.parseInt(tf.getText());
-                        if (newLevel < 1)
-                            newLevel = 1;
-                        if (newLevel > 100)
-                            newLevel = 100;
-                        level = newLevel;
-                    } catch (NumberFormatException ex) { }
-                }
-            });
+        public class CheatTextField extends JTextField {
+            public CheatTextField(int width) {
+                super(width);
+
+                final CheatTextField self = this;
+
+                this.getDocument().addDocumentListener(
+                    new DocumentListener() {
+                    public void changedUpdate(DocumentEvent e) { }
+                    public void removeUpdate(DocumentEvent e) {
+                        try {
+                            int newLevel =
+                                Integer.parseInt(self.getText());
+                            if (newLevel < 1)
+                                newLevel = 1;
+                            // Considering how many ships are created just at
+                            // level 40, going to level 1000 for example could
+                            // easily crash a machine that doesn't handle huge
+                            // resource allocation requests well.
+                            if (newLevel > 100)
+                                newLevel = 100;
+                            level = newLevel;
+                        } catch (NumberFormatException ex) { }
+                    }
+                    public void insertUpdate(DocumentEvent e) {
+                        try {
+                            int newLevel =
+                                Integer.parseInt(self.getText());
+                            if (newLevel < 1)
+                                newLevel = 1;
+                            if (newLevel > 100)
+                                newLevel = 100;
+                            level = newLevel;
+                        } catch (NumberFormatException ex) { }
+                    }
+                });
+            }
         }
     }
 
