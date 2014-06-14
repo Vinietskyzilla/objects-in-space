@@ -1,6 +1,11 @@
 // Objects in Space
 // By David Winiecki
 
+// Note: if you see a comment that says DEBUG, it indicates that the purpose of
+// the code following it is to debug adjacent code. It does not mean that the
+// code following it needs to be debugged. It may also mean that the code is
+// not intended for inclusion in a production version of the app.
+
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
@@ -9,6 +14,7 @@ import java.io.*;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.*;
+import javax.swing.event.*;
 import java.util.*;
 import java.util.List;
 
@@ -192,23 +198,44 @@ public class Game {
         private JLabel levelLabel;
         private JPanel innerPanel;
         private JLabel nextSystemMsg;
+        private JTextField levelCheatTF;
 
         public UpdatePanel() {
+
+            this.setLayout(new BorderLayout());
             this.setMinimumSize(new Dimension(panelWidth, panelHeight));
+
             innerPanel = new JPanel();
             innerPanel.setLayout(new BoxLayout(innerPanel, BoxLayout.Y_AXIS));
-            innerPanel.setBorder(new EmptyBorder(panelHeight / 3, 0, 0, 0));
-            this.add(innerPanel);
+            innerPanel.setBorder(new EmptyBorder(panelHeight * 2/5, 0, 0, 0));
+
             levelLabel = new JLabel("Level " + level);
             levelLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             innerPanel.add(levelLabel);
+
             buttonStartLevel = new JButton("LAUNCH");
             buttonStartLevel.setAlignmentX(Component.CENTER_ALIGNMENT);
             buttonStartLevel.addActionListener(new StartLevelListener());
             innerPanel.add(buttonStartLevel);
+
             nextSystemMsg = new JLabel();
             nextSystemMsg.setAlignmentX(Component.CENTER_ALIGNMENT);
             innerPanel.add(nextSystemMsg);
+
+            this.add(BorderLayout.CENTER, innerPanel);
+
+            // DEBUG
+            JPanel cheatPanel = new JPanel();
+            JLabel cheatLabel =
+                new JLabel("Enter a number to jump to a level");
+            cheatPanel.add(cheatLabel);
+            cheatPanel.add(BorderLayout.SOUTH, cheatLabel);
+            levelCheatTF = new JTextField(10);
+            addLevelCheatListener(levelCheatTF);
+            cheatPanel.add(levelCheatTF);
+            cheatPanel.add(BorderLayout.SOUTH, levelCheatTF);
+
+            this.add(BorderLayout.SOUTH, cheatPanel);
         }
 
         protected class StartLevelListener implements ActionListener {
@@ -222,6 +249,7 @@ public class Game {
 
         public void resetAfterLevel() {
             levelLabel.setText("Level " + level);
+            levelCheatTF.setText("");
             if (level == 1)
                 nextSystemMsg.setText("");
             if (level == 2)
@@ -229,6 +257,39 @@ public class Game {
 
             frame.getContentPane().setCursor(Cursor.getDefaultCursor());
             buttonStartLevel.requestFocus();
+        }
+
+        public void addLevelCheatListener(JTextField tf) {
+            tf.getDocument().addDocumentListener(
+                new DocumentListener() {
+                public void changedUpdate(DocumentEvent e) { }
+                public void removeUpdate(DocumentEvent e) {
+                    try {
+                        int newLevel =
+                            Integer.parseInt(tf.getText());
+                        if (newLevel < 1)
+                            newLevel = 1;
+                        // Considering how many ships are created just at
+                        // level 40, going to level 1000 for example could
+                        // easily crash a machine that doesn't handle huge
+                        // resource allocation requests well.
+                        if (newLevel > 100)
+                            newLevel = 100;
+                        level = newLevel;
+                    } catch (NumberFormatException ex) { }
+                }
+                public void insertUpdate(DocumentEvent e) {
+                    try {
+                        int newLevel =
+                            Integer.parseInt(tf.getText());
+                        if (newLevel < 1)
+                            newLevel = 1;
+                        if (newLevel > 100)
+                            newLevel = 100;
+                        level = newLevel;
+                    } catch (NumberFormatException ex) { }
+                }
+            });
         }
     }
 
@@ -348,7 +409,7 @@ public class Game {
                 g2d.fillRect(panelWidth + hudDividerWidth + mapMargin - 1,
                     mapMargin + mapWidth + 5,
                     (mapWidth + 3) * hero.structInteg / hero.maxStructInteg,
-                    20); 
+                    20);
             }
         }
 
