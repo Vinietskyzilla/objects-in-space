@@ -178,7 +178,10 @@ public class Game {
                 paintTime += new Date().getTime() - loopTime;
                 loopTime = new Date().getTime();
             }
-            ++level;
+            if (physicsLS.enemiesRemain())
+                level = 1;
+            else
+                ++level;
             actP.nextPanel();
         }
     }
@@ -188,6 +191,7 @@ public class Game {
         private JButton buttonStartLevel;
         private JLabel levelLabel;
         private JPanel innerPanel;
+        private JLabel nextSystemMsg;
 
         public UpdatePanel() {
             this.setMinimumSize(new Dimension(panelWidth, panelHeight));
@@ -202,6 +206,9 @@ public class Game {
             buttonStartLevel.setAlignmentX(Component.CENTER_ALIGNMENT);
             buttonStartLevel.addActionListener(new StartLevelListener());
             innerPanel.add(buttonStartLevel);
+            nextSystemMsg = new JLabel();
+            nextSystemMsg.setAlignmentX(Component.CENTER_ALIGNMENT);
+            innerPanel.add(nextSystemMsg);
         }
 
         protected class StartLevelListener implements ActionListener {
@@ -215,12 +222,10 @@ public class Game {
 
         public void resetAfterLevel() {
             levelLabel.setText("Level " + level);
-            if (level == 2) {
-                JLabel msg =
-                    new JLabel("The enemies in the next system are faster and their numbers are greater. Your weapons have been upgraded.");
-                msg.setAlignmentX(Component.CENTER_ALIGNMENT);
-                innerPanel.add(msg);
-            }
+            if (level == 1)
+                nextSystemMsg.setText("");
+            if (level == 2)
+                nextSystemMsg.setText("The enemies in the next system are faster and their numbers are greater. Your weapons have been upgraded.");
 
             frame.getContentPane().setCursor(Cursor.getDefaultCursor());
             buttonStartLevel.requestFocus();
