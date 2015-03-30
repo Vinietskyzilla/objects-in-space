@@ -8,4 +8,6 @@ Create a jar file:
 jar -cvmf manifest.txt "Objects in Space.jar" *.class *.png
 
 Play the game:
+Double-click "Objects in Space.jar"
+or
 java -jar "Objects in Space.jar"
