@@ -28,4 +28,4 @@ This project lives at https://github.com/Vinietskyzilla/objects-in-space.
 
 ## Credits
 
-The player ship sprite was adapted (using Blender) from an [image](http://millionthvector.blogspot.com/p/free-sprites.html) created by MillionthVector. That image is licensed under a [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/).
+The player ship sprite was adapted (using Blender and ImageMagick) from an [image](http://millionthvector.blogspot.com/p/free-sprites.html) created by MillionthVector. That image is licensed under a [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/).
