@@ -3,10 +3,15 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 public class PlayerShip extends Ship {
     boolean playerIsAccel;
+    public int spriteWidth;
+    public int spriteHeight;
+    public BufferedImage sprite;
+
     protected PlayerShip() {}
     public PlayerShip(int X, int Y, int sID) {
         // Pass maxVelocity to SpaceObj.
         super(5);
+
         turnRate = Math.PI / 160;
         baseAccelRate = .2;
 
@@ -35,6 +40,9 @@ public class PlayerShip extends Ship {
         dy = 0;
         playerIsAccel = false;
 
+        spriteWidth = 100;
+        spriteHeight = 100;
+
         origObjImg = null;
         try {
             origObjImg =
@@ -42,6 +50,11 @@ public class PlayerShip extends Ship {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        diam = origObjImg.getWidth();
+        diam = 50;
+        updateSprite();
+    }
+    public void updateSprite() {
+        int spriteIndex = ((int)(24.0 * (angle + Math.PI) / (2.0 * Math.PI)) + 6) % 24;
+        sprite = origObjImg.getSubimage(spriteIndex * spriteWidth, 0, spriteWidth, spriteHeight);
     }
 }

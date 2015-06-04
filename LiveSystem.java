@@ -158,6 +158,7 @@ public class LiveSystem {
                 if (hero.angle < -Math.PI)
                     hero.angle += 2*Math.PI;
             }
+            hero.updateSprite();
         }
 
         for (Ship s : ships) {

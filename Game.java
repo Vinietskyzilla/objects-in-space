@@ -361,7 +361,17 @@ public class Game {
                         w.diam, w.diam);
                 }
 
-                if (hero.countDown > Ship.COUNTDOWN_END) {
+                if (hero.status == ShipStatus.ALIVE) {
+
+                    // Position at which to draw in the panel.
+                    frameX = ((int) hero.x) + panelWidth / 2
+                      - hero.spriteWidth/2;
+                    frameY = -((int) hero.y) + panelHeight / 2
+                      - hero.spriteHeight/2;
+                    // Draw image.
+                    g2d.drawImage(hero.sprite, frameX, frameY, this);
+                } else if (hero.status == ShipStatus.DYING) {
+
                     origXform = g2d.getTransform();
                     newXform = (AffineTransform)(origXform.clone());
                     // The center of rotation is the position of the hero in
