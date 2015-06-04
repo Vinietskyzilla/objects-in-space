@@ -300,7 +300,6 @@ public class LiveSystem {
                         if (hit) {
                             s.structInteg -= w.damage;
                             if (s.structInteg <= 0) {
-                                s.status = ShipStatus.DYING;
                                 s.die();
                             }
                             w.applyInertia(s);
@@ -323,7 +322,6 @@ public class LiveSystem {
                     if (hit) {
                         s.structInteg -= w.damage;
                         if (s.structInteg <= 0) {
-                            s.status = ShipStatus.DYING;
                             s.die();
                         }
                         w.applyInertia(s);

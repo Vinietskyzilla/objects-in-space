@@ -87,30 +87,4 @@ public abstract class SpaceObj {
         s.dx += dx * mass / s.mass;
         s.dy += dy * mass / s.mass;
     }
-    public void die() {
-        isAccel = 0;
-        isBoosting = false;
-        turningRight = false;
-        turningLeft = false;
-        firing = false;
-        // If the ship is not motionless, which would screw up the angle
-        // calculation, then calculate the new angle.
-        if (dx != 0 || dy != 0) {
-            // East is 0, west is -pi. Pi is outside the range of directions.
-            // I think Math.atan returns theta in the range {-pi/2, pi/2}. (I
-            // think it can differentiate between straight down and straight
-            // up because Java has Infinity and -Infinity.)
-            angle = Math.atan(dy/dx);
-            if (dx < 0) {
-                if (angle >= 0)
-                    angle -= Math.PI;
-                else
-                    angle += Math.PI;
-            }
-        }
-        try {
-            origObjImg =
-              ImageIO.read(getClass().getResource("ballofflame.png"));
-        } catch (IOException e) { e.printStackTrace(); }
-    }
 }
