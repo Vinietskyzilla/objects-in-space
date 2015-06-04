@@ -1,0 +1,22 @@
+How to put a 2d image on a plane in Blender:
+
+Delete the default cube object
+Add a new mesh - a plane
+Add material to the plane
+Add texture to the material
+Unwrap if necessary (hover over plane and press u)
+Position texture in uv map (use g to grab and left click to confirm)
+Position camera (use view > camera, view > navigation > walk, and view > navigation > fly)
+Turn on transparency on the material and change alpha to 0
+Turn on alpha under texture > influence > diffuse
+Turn on color under texture > influence > specular
+Change lamp type from point to sun, to get a bright end result
+View > top before rotating
+Add key frames and rotate the plane by pressing r, typing the number of degrees to rotate, and pressing enter
+Recommend using 25 frames and 5 key frames, pointing the spaceship up (key frame 1), left (7), down (13), right (19), and up (25) in the key frames
+Change interpolation to linear on dope sheet (press t and select)
+Change background to transparent under scene (the little camera) > Shading > Alpha
+Render animation to png files
+Retrieve them from /tmp
+Delete the last image, 0025.png - it was just a guide
+Concatenate them with convert * +append result.png (with imagemagick)
