@@ -1,6 +1,6 @@
 # Objects in Space
 
-![Screenshot of gameplay](http://dcki.github.io/portfolio/images/objects-in-space-screenshot.png)
+A space game! [Video](https://drive.google.com/file/d/1zvT-1iTArSnmp3RRKXutjbAwafC361RX/view?usp=sharing)
 
 ## Setup
 
